@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../providers/device_provider.dart';
 import '../../services/storage_service.dart';
+import '../app_lock/app_lock_gate.dart';
 import '../home/home_screen.dart';
 import '../setup/setup_screen.dart';
 
@@ -39,10 +40,12 @@ class _SplashScreenState extends State<SplashScreen> {
       // Restore saved device into provider
       context.read<DeviceProvider>().setDevice(savedDevice);
 
-      // Go directly to dashboard
+      // Go to dashboard through App Lock
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (_) => const HomeScreen(),
+          builder: (_) => const AppLockGate(
+            child: HomeScreen(),
+          ),
         ),
       );
     } else {
