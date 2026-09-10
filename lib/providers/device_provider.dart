@@ -29,9 +29,9 @@ class DeviceProvider extends ChangeNotifier {
     ),
   ];
 
-  // -------------------------
-  // Getters
-  // -------------------------
+  // =========================
+  // GETTERS
+  // =========================
 
   Device? get device => _device;
 
@@ -41,9 +41,9 @@ class DeviceProvider extends ChangeNotifier {
 
   bool get isOnline => _device?.isOnline ?? false;
 
-  // -------------------------
-  // Device
-  // -------------------------
+  // =========================
+  // DEVICE METHODS
+  // =========================
 
   void setDevice(Device device) {
     _device = device;
@@ -57,9 +57,9 @@ class DeviceProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // -------------------------
-  // Relay
-  // -------------------------
+  // =========================
+  // RELAY METHODS
+  // =========================
 
   Relay? getRelay(int relayId) {
     try {
@@ -71,7 +71,10 @@ class DeviceProvider extends ChangeNotifier {
     }
   }
 
-  void updateRelayState(int relayId, bool isOn) {
+  void updateRelayState(
+    int relayId,
+    bool isOn,
+  ) {
     final relay = getRelay(relayId);
 
     if (relay == null) return;
@@ -89,11 +92,36 @@ class DeviceProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // -------------------------
-  // Rename Relay
-  // -------------------------
+  // =========================
+  // SYNC WITH ESP32
+  // =========================
 
-  void renameRelay(int relayId, String newName) {
+  void syncRelayStates(
+    Map<String, dynamic> status,
+  ) {
+    for (int i = 1; i <= 4; i++) {
+      final relay = getRelay(i);
+
+      if (relay == null) continue;
+
+      final value = status['relay$i'];
+
+      if (value is bool) {
+        relay.isOn = value;
+      }
+    }
+
+    notifyListeners();
+  }
+
+  // =========================
+  // RENAME RELAY
+  // =========================
+
+  void renameRelay(
+    int relayId,
+    String newName,
+  ) {
     final relay = getRelay(relayId);
 
     if (relay == null) return;
@@ -102,9 +130,9 @@ class DeviceProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // -------------------------
-  // Reset
-  // -------------------------
+  // =========================
+  // CLEAR DEVICE
+  // =========================
 
   void clearDevice() {
     _device = null;

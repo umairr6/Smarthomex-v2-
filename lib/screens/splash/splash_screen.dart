@@ -1,8 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
+import '../../providers/device_provider.dart';
+import '../../services/storage_service.dart';
+import '../home/home_screen.dart';
 import '../setup/setup_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -13,27 +16,43 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  Timer? _timer;
+  final StorageService _storageService = StorageService();
 
   @override
   void initState() {
     super.initState();
+    _startApp();
+  }
 
-    _timer = Timer(const Duration(seconds: 3), () {
-      if (!mounted) return;
+  Future<void> _startApp() async {
+    // Show splash screen for 3 seconds
+    await Future.delayed(const Duration(seconds: 3));
 
+    if (!mounted) return;
+
+    // Check for saved ESP32 device
+    final savedDevice = await _storageService.loadDevice();
+
+    if (!mounted) return;
+
+    if (savedDevice != null) {
+      // Restore saved device into provider
+      context.read<DeviceProvider>().setDevice(savedDevice);
+
+      // Go directly to dashboard
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => const HomeScreen(),
+        ),
+      );
+    } else {
+      // No saved device → setup screen
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (_) => const SetupScreen(),
         ),
       );
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
+    }
   }
 
   @override
@@ -44,40 +63,52 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.home_rounded,
-              color: Color(0xff34B7F1),
-              size: 90,
+            // App icon
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: const Color(0xff1E293B),
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: const Icon(
+                Icons.home_rounded,
+                size: 55,
+                color: Color(0xff34B7F1),
+              ),
             ),
 
-            const SizedBox(height: 20),
+            const SizedBox(height: 28),
 
-            Text(
+            // App name
+            const Text(
               'SmartHomeX',
-              style: GoogleFonts.poppins(
-                fontSize: 32,
+              style: TextStyle(
+                fontSize: 30,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
 
-            Text(
+            // Tagline
+            const Text(
               'Smart Control. Simplified.',
-              style: GoogleFonts.poppins(
+              style: TextStyle(
+                fontSize: 15,
                 color: Colors.white70,
-                fontSize: 16,
               ),
             ),
 
-            const SizedBox(height: 50),
+            const SizedBox(height: 40),
 
+            // Loading indicator
             const SizedBox(
-              width: 40,
-              height: 40,
+              width: 28,
+              height: 28,
               child: CircularProgressIndicator(
-                strokeWidth: 3,
+                strokeWidth: 2.5,
                 color: Color(0xff34B7F1),
               ),
             ),
