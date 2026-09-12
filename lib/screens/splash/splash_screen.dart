@@ -1,13 +1,6 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
-import '../../providers/device_provider.dart';
-import '../../services/storage_service.dart';
-import '../app_lock/app_lock_gate.dart';
-import '../home/home_screen.dart';
-import '../setup/setup_screen.dart';
+import '../auth/auth_gate.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -17,102 +10,84 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  final StorageService _storageService = StorageService();
-
   @override
   void initState() {
     super.initState();
-    _startApp();
+    _startSplash();
   }
 
-  Future<void> _startApp() async {
-    // Show splash screen for 3 seconds
-    await Future.delayed(const Duration(seconds: 3));
+  Future<void> _startSplash() async {
+    await Future.delayed(
+      const Duration(seconds: 3),
+    );
 
     if (!mounted) return;
 
-    // Check for saved ESP32 device
-    final savedDevice = await _storageService.loadDevice();
-
-    if (!mounted) return;
-
-    if (savedDevice != null) {
-      // Restore saved device into provider
-      context.read<DeviceProvider>().setDevice(savedDevice);
-
-      // Go to dashboard through App Lock
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const AppLockGate(
-            child: HomeScreen(),
-          ),
-        ),
-      );
-    } else {
-      // No saved device → setup screen
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder: (_) => const SetupScreen(),
-        ),
-      );
-    }
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => const AuthGate(),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    const background = Color(0xFF0F172A);
+    const primary = Color(0xFF34B7F1);
+
     return Scaffold(
-      backgroundColor: const Color(0xff0F172A),
+      backgroundColor: background,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // App icon
             Container(
               width: 100,
               height: 100,
               decoration: BoxDecoration(
-                color: const Color(0xff1E293B),
-                borderRadius: BorderRadius.circular(30),
+                color: primary.withOpacity(.12),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: primary.withOpacity(.35),
+                  width: 1.5,
+                ),
               ),
               child: const Icon(
                 Icons.home_rounded,
-                size: 55,
-                color: Color(0xff34B7F1),
+                size: 52,
+                color: primary,
               ),
             ),
 
             const SizedBox(height: 28),
 
-            // App name
             const Text(
               'SmartHomeX',
               style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
                 color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
               ),
             ),
 
             const SizedBox(height: 8),
 
-            // Tagline
             const Text(
-              'Smart Control. Simplified.',
+              'Smart living. Simple control.',
               style: TextStyle(
-                fontSize: 15,
-                color: Colors.white70,
+                color: Colors.white54,
+                fontSize: 14,
               ),
             ),
 
             const SizedBox(height: 40),
 
-            // Loading indicator
             const SizedBox(
-              width: 28,
-              height: 28,
+              width: 30,
+              height: 30,
               child: CircularProgressIndicator(
                 strokeWidth: 2.5,
-                color: Color(0xff34B7F1),
+                color: primary,
               ),
             ),
           ],
