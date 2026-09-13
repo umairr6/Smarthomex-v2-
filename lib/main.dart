@@ -18,7 +18,7 @@ Future<void> main() async {
     publishableKey:
         'sb_publishable_Yp9leAzUm8XpbzYZwk-mPA_9u0KgIO1',
   );
-  
+
   // =====================================================
   // START APP
   // =====================================================
