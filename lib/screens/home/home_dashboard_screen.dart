@@ -4,6 +4,7 @@ import '../../services/auth_service.dart';
 import '../../services/device_service.dart';
 import '../../services/home_service.dart';
 import '../setup/pair_device_screen.dart';
+import 'room_control_screen.dart';
 
 class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
@@ -16,8 +17,8 @@ class HomeDashboardScreen extends StatefulWidget {
 class _HomeDashboardScreenState
     extends State<HomeDashboardScreen> {
   final HomeService _homeService = HomeService();
-  final AuthService _authService = AuthService();
   final DeviceService _deviceService = DeviceService();
+  final AuthService _authService = AuthService();
 
   List<Map<String, dynamic>> _homes = [];
 
@@ -26,6 +27,7 @@ class _HomeDashboardScreenState
   final Map<String, List<Map<String, dynamic>>> _devices = {};
 
   bool _loading = true;
+  bool _refreshing = false;
 
   @override
   void initState() {
@@ -33,23 +35,21 @@ class _HomeDashboardScreenState
     _loadHomes();
   }
 
-  // ==========================================
-  // LOAD HOMES, ROOMS & DEVICES
-  // ==========================================
+  // =========================================================
+  // LOAD HOMES
+  // =========================================================
 
   Future<void> _loadHomes() async {
-    if (mounted) {
+    if (!_loading) {
       setState(() {
-        _loading = true;
+        _refreshing = true;
       });
     }
 
     try {
       final homes = await _homeService.getHomes();
 
-      final rooms =
-          <String, List<Map<String, dynamic>>>{};
-
+      final rooms = <String, List<Map<String, dynamic>>>{};
       final devices =
           <String, List<Map<String, dynamic>>>{};
 
@@ -87,33 +87,78 @@ class _HomeDashboardScreenState
           ..addAll(devices);
 
         _loading = false;
+        _refreshing = false;
       });
     } catch (e) {
-      debugPrint(
-        'Dashboard loading error: $e',
-      );
-
       if (!mounted) return;
 
       setState(() {
         _loading = false;
+        _refreshing = false;
       });
 
-      _showMessage(
-        'Could not load your homes.',
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Could not load your home: $e',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     }
   }
 
-  // ==========================================
+  // =========================================================
   // ADD HOME
-  // ==========================================
+  // =========================================================
 
   Future<void> _addHome() async {
-    final name = await _showNameDialog(
-      title: 'Add Home',
-      hint: 'Home name',
+    final controller = TextEditingController();
+
+    final name = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: const Color(0xff1E293B),
+          title: const Text('Add Home'),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            textCapitalization:
+                TextCapitalization.words,
+            decoration: const InputDecoration(
+              hintText: 'Home name',
+              prefixIcon:
+                  Icon(Icons.home_rounded),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final value =
+                    controller.text.trim();
+
+                if (value.isEmpty) return;
+
+                Navigator.pop(
+                  dialogContext,
+                  value,
+                );
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        );
+      },
     );
+
+    controller.dispose();
 
     if (name == null || name.trim().isEmpty) {
       return;
@@ -126,29 +171,79 @@ class _HomeDashboardScreenState
 
       if (!mounted) return;
 
-      _showMessage(
-        'Home created successfully.',
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        const SnackBar(
+          content: Text('Home added successfully.'),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     } catch (e) {
-      debugPrint('Create home error: $e');
+      if (!mounted) return;
 
-      _showMessage(
-        'Could not create home.',
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(
+            'Could not add home: $e',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     }
   }
 
-  // ==========================================
+  // =========================================================
   // ADD ROOM
-  // ==========================================
+  // =========================================================
 
-  Future<void> _addRoom(
-    String homeId,
-  ) async {
-    final name = await _showNameDialog(
-      title: 'Add Room',
-      hint: 'Room name',
+  Future<void> _addRoom(String homeId) async {
+    final controller = TextEditingController();
+
+    final name = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: const Color(0xff1E293B),
+          title: const Text('Add Room'),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            textCapitalization:
+                TextCapitalization.words,
+            decoration: const InputDecoration(
+              hintText: 'Room name',
+              prefixIcon:
+                  Icon(Icons.meeting_room_rounded),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final value =
+                    controller.text.trim();
+
+                if (value.isEmpty) return;
+
+                Navigator.pop(
+                  dialogContext,
+                  value,
+                );
+              },
+              child: const Text('Add'),
+            ),
+          ],
+        );
+      },
     );
+
+    controller.dispose();
 
     if (name == null || name.trim().isEmpty) {
       return;
@@ -164,258 +259,74 @@ class _HomeDashboardScreenState
 
       if (!mounted) return;
 
-      _showMessage(
-        'Room added successfully.',
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        const SnackBar(
+          content: Text('Room added successfully.'),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     } catch (e) {
-      debugPrint('Create room error: $e');
-
-      _showMessage(
-        'Could not create room.',
-      );
-    }
-  }
-
-  // ==========================================
-  // RENAME HOME
-  // ==========================================
-
-  Future<void> _renameHome(
-    String homeId,
-    String currentName,
-  ) async {
-    final name = await _showNameDialog(
-      title: 'Rename Home',
-      hint: 'Home name',
-      initialValue: currentName,
-    );
-
-    if (name == null || name.trim().isEmpty) {
-      return;
-    }
-
-    try {
-      await _homeService.renameHome(
-        homeId,
-        name,
-      );
-
-      await _loadHomes();
-    } catch (e) {
-      debugPrint('Rename home error: $e');
-
-      _showMessage(
-        'Could not rename home.',
-      );
-    }
-  }
-
-  // ==========================================
-  // RENAME ROOM
-  // ==========================================
-
-  Future<void> _renameRoom(
-    String roomId,
-    String currentName,
-  ) async {
-    final name = await _showNameDialog(
-      title: 'Rename Room',
-      hint: 'Room name',
-      initialValue: currentName,
-    );
-
-    if (name == null || name.trim().isEmpty) {
-      return;
-    }
-
-    try {
-      await _homeService.renameRoom(
-        roomId: roomId,
-        name: name,
-      );
-
-      await _loadHomes();
-    } catch (e) {
-      debugPrint('Rename room error: $e');
-
-      _showMessage(
-        'Could not rename room.',
-      );
-    }
-  }
-
-  // ==========================================
-  // DELETE HOME
-  // ==========================================
-
-  Future<void> _deleteHome(
-    String homeId,
-    String homeName,
-  ) async {
-    final confirmed = await _confirmDelete(
-      title: 'Delete Home?',
-      message:
-          'Delete "$homeName" and all rooms inside it?',
-    );
-
-    if (!confirmed) return;
-
-    try {
-      await _homeService.deleteHome(homeId);
-
-      await _loadHomes();
-    } catch (e) {
-      debugPrint('Delete home error: $e');
-
-      _showMessage(
-        'Could not delete home.',
-      );
-    }
-  }
-
-  // ==========================================
-  // DELETE ROOM
-  // ==========================================
-
-  Future<void> _deleteRoom(
-    String roomId,
-    String roomName,
-  ) async {
-    final confirmed = await _confirmDelete(
-      title: 'Delete Room?',
-      message:
-          'Delete "$roomName"?',
-    );
-
-    if (!confirmed) return;
-
-    try {
-      await _homeService.deleteRoom(roomId);
-
-      await _loadHomes();
-    } catch (e) {
-      debugPrint('Delete room error: $e');
-
-      _showMessage(
-        'Could not delete room.',
-      );
-    }
-  }
-
-  // ==========================================
-  // UNPAIR DEVICE
-  // ==========================================
-
-  Future<void> _unpairDevice(
-    String deviceId,
-    String roomName,
-  ) async {
-    final confirmed = await _confirmDelete(
-      title: 'Unpair Device?',
-      message:
-          'Remove the ESP32 from "$roomName"?',
-    );
-
-    if (!confirmed) return;
-
-    try {
-      await _deviceService.deleteDevice(
-        deviceId,
-      );
-
-      await _loadHomes();
-
       if (!mounted) return;
 
-      _showMessage(
-        'ESP32 unpaired successfully.',
-      );
-    } catch (e) {
-      debugPrint(
-        'Unpair device error: $e',
-      );
-
-      _showMessage(
-        'Could not unpair device.',
-      );
-    }
-  }
-
-  // ==========================================
-  // OPEN PAIRING
-  // ==========================================
-
-  Future<void> _openPairDevice(
-    String roomId,
-    String roomName,
-  ) async {
-    final paired =
-        await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (_) => PairDeviceScreen(
-          roomId: roomId,
-          roomName: roomName,
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(
+            'Could not add room: $e',
+          ),
+          behavior: SnackBarBehavior.floating,
         ),
-      ),
-    );
-
-    if (paired == true) {
-      await _loadHomes();
+      );
     }
   }
 
-  // ==========================================
-  // NAME DIALOG
-  // ==========================================
+  // =========================================================
+  // RENAME HOME
+  // =========================================================
 
-  Future<String?> _showNameDialog({
-    required String title,
-    required String hint,
-    String initialValue = '',
-  }) async {
-    final controller =
-        TextEditingController(
-      text: initialValue,
+  Future<void> _renameHome(
+    Map<String, dynamic> home,
+  ) async {
+    final controller = TextEditingController(
+      text: home['name'] as String? ?? '',
     );
 
-    final result =
-        await showDialog<String>(
+    final name = await showDialog<String>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          backgroundColor:
-              const Color(0xFF1E293B),
-          title: Text(title),
+          backgroundColor: const Color(0xff1E293B),
+          title: const Text('Rename Home'),
           content: TextField(
             controller: controller,
             autofocus: true,
             textCapitalization:
                 TextCapitalization.words,
-            decoration: InputDecoration(
-              hintText: hint,
+            decoration: const InputDecoration(
+              hintText: 'Home name',
             ),
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(
-                  dialogContext,
-                );
+                Navigator.pop(dialogContext);
               },
-              child: const Text(
-                'Cancel',
-              ),
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
+                final value =
+                    controller.text.trim();
+
+                if (value.isEmpty) return;
+
                 Navigator.pop(
                   dialogContext,
-                  controller.text.trim(),
+                  value,
                 );
               },
-              child: const Text(
-                'Save',
-              ),
+              child: const Text('Save'),
             ),
           ],
         );
@@ -424,26 +335,131 @@ class _HomeDashboardScreenState
 
     controller.dispose();
 
-    return result;
+    if (name == null || name.trim().isEmpty) {
+      return;
+    }
+
+    try {
+      await _homeService.renameHome(
+        home['id'] as String,
+        name,
+      );
+
+      await _loadHomes();
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(
+            'Could not rename home: $e',
+          ),
+        ),
+      );
+    }
   }
 
-  // ==========================================
-  // CONFIRM DELETE
-  // ==========================================
+  // =========================================================
+  // RENAME ROOM
+  // =========================================================
 
-  Future<bool> _confirmDelete({
-    required String title,
-    required String message,
-  }) async {
-    final result =
-        await showDialog<bool>(
+  Future<void> _renameRoom(
+    Map<String, dynamic> room,
+  ) async {
+    final controller = TextEditingController(
+      text: room['name'] as String? ?? '',
+    );
+
+    final name = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: const Color(0xff1E293B),
+          title: const Text('Rename Room'),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            textCapitalization:
+                TextCapitalization.words,
+            decoration: const InputDecoration(
+              hintText: 'Room name',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(dialogContext);
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                final value =
+                    controller.text.trim();
+
+                if (value.isEmpty) return;
+
+                Navigator.pop(
+                  dialogContext,
+                  value,
+                );
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        );
+      },
+    );
+
+    controller.dispose();
+
+    if (name == null || name.trim().isEmpty) {
+      return;
+    }
+
+    try {
+      await _homeService.renameRoom(
+        roomId: room['id'] as String,
+        name: name,
+      );
+
+      await _loadHomes();
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(
+            'Could not rename room: $e',
+          ),
+        ),
+      );
+    }
+  }
+
+  // =========================================================
+  // DELETE HOME
+  // =========================================================
+
+  Future<void> _deleteHome(
+    Map<String, dynamic> home,
+  ) async {
+    final homeName =
+        home['name'] as String? ?? 'this home';
+
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
           backgroundColor:
-              const Color(0xFF1E293B),
-          title: Text(title),
-          content: Text(message),
+              const Color(0xff1E293B),
+          title: const Text('Delete Home?'),
+          content: Text(
+            'Delete "$homeName" and all rooms '
+            'inside it?',
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -452,17 +468,12 @@ class _HomeDashboardScreenState
                   false,
                 );
               },
-              child: const Text(
-                'Cancel',
-              ),
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
-              style:
-                  ElevatedButton.styleFrom(
-                backgroundColor:
-                    Colors.red,
-                foregroundColor:
-                    Colors.white,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
               ),
               onPressed: () {
                 Navigator.pop(
@@ -470,793 +481,385 @@ class _HomeDashboardScreenState
                   true,
                 );
               },
-              child: const Text(
-                'Delete',
-              ),
+              child: const Text('Delete'),
             ),
           ],
         );
       },
     );
 
-    return result ?? false;
-  }
+    if (confirmed != true) return;
 
-  // ==========================================
-  // LOGOUT
-  // ==========================================
+    try {
+      await _homeService.deleteHome(
+        home['id'] as String,
+      );
 
-  Future<void> _logout() async {
-    await _authService.signOut();
-  }
+      await _loadHomes();
 
-  // ==========================================
-  // MESSAGE
-  // ==========================================
+      if (!mounted) return;
 
-  void _showMessage(
-    String message,
-  ) {
-    if (!mounted) return;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        const SnackBar(
+          content: Text('Home deleted.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
 
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
-      SnackBar(
-        content: Text(message),
-        behavior:
-            SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  // ==========================================
-  // BUILD
-  // ==========================================
-
-  @override
-  Widget build(BuildContext context) {
-    final user =
-        _authService.currentUser;
-
-    final fullName =
-        user?.userMetadata?['full_name']
-            as String?;
-
-    final displayName =
-        fullName?.trim().isNotEmpty == true
-            ? fullName!
-            : 'SmartHomeX User';
-
-    return Scaffold(
-      backgroundColor:
-          const Color(0xFF0F172A),
-
-      appBar: AppBar(
-        backgroundColor:
-            const Color(0xFF0F172A),
-        elevation: 0,
-        title: const Text(
-          'SmartHomeX',
-          style: TextStyle(
-            fontWeight:
-                FontWeight.bold,
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(
+            'Could not delete home: $e',
           ),
         ),
-        actions: [
-          IconButton(
-            tooltip: 'Logout',
-            onPressed: _logout,
-            icon: const Icon(
-              Icons.logout_rounded,
-            ),
-          ),
-        ],
-      ),
-
-      floatingActionButton:
-          FloatingActionButton.extended(
-        onPressed: _addHome,
-        backgroundColor:
-            const Color(0xFF34B7F1),
-        foregroundColor:
-            Colors.white,
-        icon: const Icon(
-          Icons.add_home_rounded,
-        ),
-        label: const Text(
-          'Add Home',
-        ),
-      ),
-
-      body: RefreshIndicator(
-        onRefresh: _loadHomes,
-        color:
-            const Color(0xFF34B7F1),
-
-        child: _loading
-            ? const Center(
-                child:
-                    CircularProgressIndicator(
-                  color: Color(
-                    0xFF34B7F1,
-                  ),
-                ),
-              )
-            : ListView(
-                physics:
-                    const AlwaysScrollableScrollPhysics(),
-
-                padding:
-                    const EdgeInsets.fromLTRB(
-                  20,
-                  10,
-                  20,
-                  100,
-                ),
-
-                children: [
-                  Text(
-                    'Welcome back,',
-                    style: TextStyle(
-                      color: Colors.white
-                          .withOpacity(.55),
-                      fontSize: 15,
-                    ),
-                  ),
-
-                  const SizedBox(
-                    height: 4,
-                  ),
-
-                  Text(
-                    displayName,
-                    style: const TextStyle(
-                      color:
-                          Colors.white,
-                      fontSize: 28,
-                      fontWeight:
-                          FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(
-                    height: 28,
-                  ),
-
-                  if (_homes.isEmpty)
-                    _emptyState()
-                  else
-                    ..._homes.map(
-                      (home) =>
-                          _homeCard(home),
-                    ),
-                ],
-              ),
-      ),
-    );
+      );
+    }
   }
 
-  // ==========================================
-  // HOME CARD
-  // ==========================================
+  // =========================================================
+  // DELETE ROOM
+  // =========================================================
 
-  Widget _homeCard(
-    Map<String, dynamic> home,
-  ) {
-    final homeId =
-        home['id'] as String;
+  Future<void> _deleteRoom(
+    Map<String, dynamic> room,
+  ) async {
+    final roomName =
+        room['name'] as String? ?? 'this room';
 
-    final homeName =
-        home['name'] as String? ??
-            'My Home';
-
-    final rooms =
-        _rooms[homeId] ??
-            <Map<String, dynamic>>[];
-
-    return Container(
-      margin:
-          const EdgeInsets.only(
-        bottom: 20,
-      ),
-
-      decoration: BoxDecoration(
-        color:
-            const Color(0xFF1E293B),
-        borderRadius:
-            BorderRadius.circular(
-          24,
-        ),
-      ),
-
-      child: Padding(
-        padding:
-            const EdgeInsets.all(18),
-
-        child: Column(
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 50,
-                  height: 50,
-                  decoration:
-                      BoxDecoration(
-                    color:
-                        const Color(
-                      0xFF34B7F1,
-                    ).withOpacity(.12),
-                    borderRadius:
-                        BorderRadius.circular(
-                      15,
-                    ),
-                  ),
-                  child:
-                      const Icon(
-                    Icons.home_rounded,
-                    color:
-                        Color(0xFF34B7F1),
-                    size: 27,
-                  ),
-                ),
-
-                const SizedBox(
-                  width: 14,
-                ),
-
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        homeName,
-                        style:
-                            const TextStyle(
-                          color:
-                              Colors.white,
-                          fontSize: 19,
-                          fontWeight:
-                              FontWeight.bold,
-                        ),
-                      ),
-
-                      const SizedBox(
-                        height: 3,
-                      ),
-
-                      Text(
-                        '${rooms.length} room${rooms.length == 1 ? '' : 's'}',
-                        style:
-                            const TextStyle(
-                          color:
-                              Colors.white54,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                PopupMenuButton<String>(
-                  onSelected:
-                      (value) {
-                    if (value ==
-                        'rename') {
-                      _renameHome(
-                        homeId,
-                        homeName,
-                      );
-                    } else if (value ==
-                        'delete') {
-                      _deleteHome(
-                        homeId,
-                        homeName,
-                      );
-                    }
-                  },
-                  itemBuilder:
-                      (context) =>
-                          const [
-                    PopupMenuItem(
-                      value:
-                          'rename',
-                      child:
-                          Text(
-                        'Rename',
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value:
-                          'delete',
-                      child:
-                          Text(
-                        'Delete',
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor:
+              const Color(0xff1E293B),
+          title: const Text('Delete Room?'),
+          content: Text(
+            'Delete "$roomName"? '
+            'Any paired ESP32 in this room '
+            'will also be removed.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                  dialogContext,
+                  false,
+                );
+              },
+              child: const Text('Cancel'),
             ),
-
-            const SizedBox(
-              height: 18,
-            ),
-
-            const Divider(
-              color: Colors.white10,
-            ),
-
-            const SizedBox(
-              height: 10,
-            ),
-
-            if (rooms.isEmpty)
-              Padding(
-                padding:
-                    const EdgeInsets
-                        .symmetric(
-                  vertical: 15,
-                ),
-                child: Column(
-                  children: [
-                    const Icon(
-                      Icons
-                          .meeting_room_outlined,
-                      color:
-                          Colors.white30,
-                      size: 35,
-                    ),
-
-                    const SizedBox(
-                      height: 8,
-                    ),
-
-                    const Text(
-                      'No rooms yet',
-                      style:
-                          TextStyle(
-                        color:
-                            Colors.white54,
-                      ),
-                    ),
-
-                    const SizedBox(
-                      height: 4,
-                    ),
-
-                    const Text(
-                      'Add your first room',
-                      style:
-                          TextStyle(
-                        color:
-                            Colors.white30,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              )
-            else
-              ...rooms.map(
-                (room) =>
-                    _roomTile(
-                  homeId,
-                  room,
-                ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
               ),
-
-            const SizedBox(
-              height: 8,
-            ),
-
-            SizedBox(
-              width:
-                  double.infinity,
-              child:
-                  OutlinedButton.icon(
-                onPressed: () =>
-                    _addRoom(
-                  homeId,
-                ),
-
-                icon:
-                    const Icon(
-                  Icons.add_rounded,
-                ),
-
-                label:
-                    const Text(
-                  'Add Room',
-                ),
-
-                style:
-                    OutlinedButton.styleFrom(
-                  foregroundColor:
-                      const Color(
-                    0xFF34B7F1,
-                  ),
-                  side:
-                      const BorderSide(
-                    color:
-                        Color(
-                      0xFF34B7F1,
-                    ),
-                  ),
-                  shape:
-                      RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius
-                            .circular(
-                      14,
-                    ),
-                  ),
-                ),
-              ),
+              onPressed: () {
+                Navigator.pop(
+                  dialogContext,
+                  true,
+                );
+              },
+              child: const Text('Delete'),
             ),
           ],
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await _homeService.deleteRoom(
+        room['id'] as String,
+      );
+
+      await _loadHomes();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        const SnackBar(
+          content: Text('Room deleted.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(
+            'Could not delete room: $e',
+          ),
+        ),
+      );
+    }
+  }
+
+  // =========================================================
+  // UNPAIR DEVICE
+  // =========================================================
+
+  Future<void> _unpairDevice(
+    Map<String, dynamic> device,
+  ) async {
+    final deviceName =
+        device['name'] as String? ??
+            'SmartHomeX ESP32';
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor:
+              const Color(0xff1E293B),
+          title: const Text('Unpair ESP32?'),
+          content: Text(
+            'Remove "$deviceName" from this room?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                  dialogContext,
+                  false,
+                );
+              },
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                Navigator.pop(
+                  dialogContext,
+                  true,
+                );
+              },
+              child: const Text('Unpair'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+
+    try {
+      await _deviceService.deleteDevice(
+        device['id'] as String,
+      );
+
+      await _loadHomes();
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        const SnackBar(
+          content: Text(
+            'ESP32 unpaired successfully.',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        SnackBar(
+          content: Text(
+            'Could not unpair device: $e',
+          ),
+        ),
+      );
+    }
+  }
+
+  // =========================================================
+  // PAIR DEVICE
+  // =========================================================
+
+  Future<void> _pairDevice(
+    Map<String, dynamic> room,
+  ) async {
+    final result = await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => PairDeviceScreen(
+          roomId: room['id'] as String,
+          roomName:
+              room['name'] as String? ?? 'Room',
+        ),
+      ),
+    );
+
+    if (result == true) {
+      await _loadHomes();
+    }
+  }
+
+  // =========================================================
+  // OPEN ROOM CONTROL
+  // =========================================================
+
+  Future<void> _openRoomControl(
+    Map<String, dynamic> room,
+    Map<String, dynamic> device,
+  ) async {
+    final ipAddress =
+        device['ip_address'] as String? ?? '';
+
+    if (ipAddress.trim().isEmpty) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context)
+          .showSnackBar(
+        const SnackBar(
+          content: Text(
+            'This device does not have an IP address.',
+          ),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+      return;
+    }
+
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => RoomControlScreen(
+          roomName:
+              room['name'] as String? ?? 'Room',
+          deviceId: device['id'] as String,
+          deviceName:
+              device['name'] as String? ??
+                  'SmartHomeX ESP32',
+          ipAddress: ipAddress,
         ),
       ),
     );
   }
 
-  // ==========================================
-  // ROOM TILE
-  // ==========================================
+  // =========================================================
+  // ROOM MENU
+  // =========================================================
 
-  Widget _roomTile(
-    String homeId,
+  void _showRoomMenu(
     Map<String, dynamic> room,
   ) {
-    final roomId =
-        room['id'] as String;
+    final roomDevices =
+        _devices[room['id'] as String] ?? [];
 
-    final roomName =
-        room['name'] as String? ??
-            'Room';
-
-    final devices =
-        _devices[roomId] ??
-            <Map<String, dynamic>>[];
-
-    final hasDevice =
-        devices.isNotEmpty;
-
-    final device =
-        hasDevice
-            ? devices.first
-            : null;
-
-    final deviceName =
-        device?['name']
-                as String? ??
-            'ESP32';
-
-    final deviceUid =
-        device?['device_uid']
-                as String? ??
-            '';
-
-    final isOnline =
-        device?['is_online']
-                as bool? ??
-            false;
-
-    return Container(
-      margin:
-          const EdgeInsets.only(
-        bottom: 8,
-      ),
-
-      decoration: BoxDecoration(
-        color: const Color(
-          0xFF0F172A,
-        ).withOpacity(.55),
-        borderRadius:
-            BorderRadius.circular(
-          16,
-        ),
-      ),
-
-      child: ListTile(
-        onTap: () async {
-          if (hasDevice) {
-            _showDeviceInfo(
-              roomName: roomName,
-              deviceName: deviceName,
-              deviceUid: deviceUid,
-              ipAddress:
-                  device?['ip_address']
-                          as String? ??
-                      '',
-              isOnline: isOnline,
-            );
-          } else {
-            await _openPairDevice(
-              roomId,
-              roomName,
-            );
-          }
-        },
-
-        leading: Container(
-          width: 42,
-          height: 42,
-          decoration:
-              BoxDecoration(
-            color: hasDevice
-                ? const Color(
-                    0xFF34B7F1,
-                  ).withOpacity(.12)
-                : Colors.white
-                    .withOpacity(.06),
-            borderRadius:
-                BorderRadius.circular(
-              12,
-            ),
-          ),
-          child: Icon(
-            hasDevice
-                ? Icons
-                    .devices_rounded
-                : Icons
-                    .meeting_room_rounded,
-            color: hasDevice
-                ? const Color(
-                    0xFF34B7F1,
-                  )
-                : Colors.white70,
-          ),
-        ),
-
-        title: Text(
-          roomName,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight:
-                FontWeight.w600,
-          ),
-        ),
-
-        subtitle: hasDevice
-            ? Row(
-                children: [
-                  Container(
-                    width: 7,
-                    height: 7,
-                    decoration:
-                        BoxDecoration(
-                      color: isOnline
-                          ? Colors.green
-                          : Colors.grey,
-                      shape:
-                          BoxShape.circle,
-                    ),
-                  ),
-
-                  const SizedBox(
-                    width: 6,
-                  ),
-
-                  Expanded(
-                    child: Text(
-                      isOnline
-                          ? '$deviceName • Online'
-                          : '$deviceName • Offline',
-                      style:
-                          const TextStyle(
-                        color:
-                            Colors.white54,
-                        fontSize: 12,
-                      ),
-                      overflow:
-                          TextOverflow
-                              .ellipsis,
-                    ),
-                  ),
-                ],
-              )
-            : const Text(
-                'Tap to pair ESP32',
-                style: TextStyle(
-                  color:
-                      Colors.white38,
-                  fontSize: 12,
-                ),
-              ),
-
-        trailing: hasDevice
-            ? PopupMenuButton<String>(
-                onSelected:
-                    (value) {
-                  if (value ==
-                      'device_info') {
-                    _showDeviceInfo(
-                      roomName:
-                          roomName,
-                      deviceName:
-                          deviceName,
-                      deviceUid:
-                          deviceUid,
-                      ipAddress:
-                          device?[
-                                  'ip_address']
-                              as String? ??
-                          '',
-                      isOnline:
-                          isOnline,
-                    );
-                  }
-
-                  if (value ==
-                      'unpair') {
-                    _unpairDevice(
-                      device!['id']
-                          as String,
-                      roomName,
-                    );
-                  }
-                },
-                itemBuilder:
-                    (context) =>
-                        const [
-                  PopupMenuItem(
-                    value:
-                        'device_info',
-                    child:
-                        Text(
-                      'Device Info',
-                    ),
-                  ),
-                  PopupMenuItem(
-                    value:
-                        'unpair',
-                    child:
-                        Text(
-                      'Unpair Device',
-                    ),
-                  ),
-                ],
-              )
-            : const Icon(
-                Icons
-                    .chevron_right_rounded,
-                color:
-                    Colors.white38,
-              ),
-      ),
-    );
-  }
-
-  // ==========================================
-  // DEVICE INFO
-  // ==========================================
-
-  void _showDeviceInfo({
-    required String roomName,
-    required String deviceName,
-    required String deviceUid,
-    required String ipAddress,
-    required bool isOnline,
-  }) {
     showModalBottomSheet(
       context: context,
       backgroundColor:
-          const Color(0xFF1E293B),
-      shape:
-          const RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.vertical(
+          const Color(0xff1E293B),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
           top: Radius.circular(24),
         ),
       ),
-      builder: (context) {
+      builder: (sheetContext) {
         return SafeArea(
           child: Padding(
             padding:
-                const EdgeInsets.all(24),
+                const EdgeInsets.fromLTRB(
+              20,
+              14,
+              20,
+              20,
+            ),
             child: Column(
-              mainAxisSize:
-                  MainAxisSize.min,
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration:
-                          BoxDecoration(
-                        color:
-                            const Color(
-                          0xFF34B7F1,
-                        ).withOpacity(.12),
-                        borderRadius:
-                            BorderRadius
-                                .circular(
-                          14,
-                        ),
-                      ),
-                      child:
-                          const Icon(
-                        Icons
-                            .devices_rounded,
-                        color:
-                            Color(
-                          0xFF34B7F1,
-                        ),
-                      ),
-                    ),
+                Container(
+                  width: 45,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius:
+                        BorderRadius.circular(10),
+                  ),
+                ),
 
-                    const SizedBox(
-                      width: 14,
-                    ),
+                const SizedBox(height: 20),
 
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment
-                                .start,
-                        children: [
-                          Text(
-                            deviceName,
-                            style:
-                                const TextStyle(
-                              color:
-                                  Colors.white,
-                              fontSize:
-                                  19,
-                              fontWeight:
-                                  FontWeight
-                                      .bold,
-                            ),
-                          ),
-                          Text(
-                            roomName,
-                            style:
-                                const TextStyle(
-                              color:
-                                  Colors.white54,
-                              fontSize:
-                                  12,
-                            ),
-                          ),
-                        ],
+                ListTile(
+                  leading: _menuIcon(
+                    Icons.edit_rounded,
+                  ),
+                  title: const Text(
+                    'Rename Room',
+                  ),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _renameRoom(room);
+                  },
+                ),
+
+                if (roomDevices.isNotEmpty)
+                  ListTile(
+                    leading: _menuIcon(
+                      Icons.router_rounded,
+                    ),
+                    title: const Text(
+                      'Device Information',
+                    ),
+                    onTap: () {
+                      Navigator.pop(sheetContext);
+
+                      _showDeviceInfo(
+                        roomDevices.first,
+                        room,
+                      );
+                    },
+                  ),
+
+                if (roomDevices.isNotEmpty)
+                  ListTile(
+                    leading: _menuIcon(
+                      Icons.link_off_rounded,
+                      color: Colors.red,
+                    ),
+                    title: const Text(
+                      'Unpair ESP32',
+                      style: TextStyle(
+                        color: Colors.red,
                       ),
                     ),
-                  ],
-                ),
+                    onTap: () {
+                      Navigator.pop(sheetContext);
 
-                const SizedBox(
-                  height: 22,
-                ),
+                      _unpairDevice(
+                        roomDevices.first,
+                      );
+                    },
+                  ),
 
-                _deviceInfoRow(
-                  'Status',
-                  isOnline
-                      ? 'Online'
-                      : 'Offline',
-                ),
-
-                _deviceInfoRow(
-                  'Device UID',
-                  deviceUid.isEmpty
-                      ? '-'
-                      : deviceUid,
-                ),
-
-                _deviceInfoRow(
-                  'IP Address',
-                  ipAddress.isEmpty
-                      ? '-'
-                      : ipAddress,
-                ),
-
-                const SizedBox(
-                  height: 12,
+                ListTile(
+                  leading: _menuIcon(
+                    Icons.delete_outline_rounded,
+                    color: Colors.red,
+                  ),
+                  title: const Text(
+                    'Delete Room',
+                    style: TextStyle(
+                      color: Colors.red,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _deleteRoom(room);
+                  },
                 ),
               ],
             ),
@@ -1266,27 +869,227 @@ class _HomeDashboardScreenState
     );
   }
 
-  Widget _deviceInfoRow(
+  // =========================================================
+  // DEVICE INFORMATION
+  // =========================================================
+
+  void _showDeviceInfo(
+    Map<String, dynamic> device,
+    Map<String, dynamic> room,
+  ) {
+    final name =
+        device['name'] as String? ??
+            'SmartHomeX ESP32';
+
+    final uid =
+        device['device_uid'] as String? ??
+            'Unknown';
+
+    final ip =
+        device['ip_address'] as String? ??
+            'Unknown';
+
+    final relayCount =
+        device['relay_count'] as int? ?? 4;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor:
+              const Color(0xff1E293B),
+          title: Row(
+            children: [
+              Container(
+                width: 42,
+                height: 42,
+                decoration: BoxDecoration(
+                  color: const Color(
+                    0xff34B7F1,
+                  ).withOpacity(.12),
+                  borderRadius:
+                      BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.router_rounded,
+                  color:
+                      Color(0xff34B7F1),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  name,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight:
+                        FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _infoRow(
+                'Room',
+                room['name'] as String? ??
+                    'Room',
+              ),
+              _infoRow(
+                'Device UID',
+                uid,
+              ),
+              _infoRow(
+                'IP Address',
+                ip,
+              ),
+              _infoRow(
+                'Relays',
+                '$relayCount',
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                  dialogContext,
+                );
+              },
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // =========================================================
+  // HOME MENU
+  // =========================================================
+
+  void _showHomeMenu(
+    Map<String, dynamic> home,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor:
+          const Color(0xff1E293B),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(24),
+        ),
+      ),
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding:
+                const EdgeInsets.fromLTRB(
+              20,
+              14,
+              20,
+              20,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 45,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius:
+                        BorderRadius.circular(10),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                ListTile(
+                  leading: _menuIcon(
+                    Icons.edit_rounded,
+                  ),
+                  title: const Text(
+                    'Rename Home',
+                  ),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _renameHome(home);
+                  },
+                ),
+
+                ListTile(
+                  leading: _menuIcon(
+                    Icons.delete_outline_rounded,
+                    color: Colors.red,
+                  ),
+                  title: const Text(
+                    'Delete Home',
+                    style: TextStyle(
+                      color: Colors.red,
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.pop(sheetContext);
+                    _deleteHome(home);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // =========================================================
+  // ICON HELPERS
+  // =========================================================
+
+  Widget _menuIcon(
+    IconData icon, {
+    Color? color,
+  }) {
+    final iconColor =
+        color ?? const Color(0xff34B7F1);
+
+    return Container(
+      width: 42,
+      height: 42,
+      decoration: BoxDecoration(
+        color: iconColor.withOpacity(.10),
+        borderRadius:
+            BorderRadius.circular(12),
+      ),
+      child: Icon(
+        icon,
+        color: iconColor,
+        size: 21,
+      ),
+    );
+  }
+
+  Widget _infoRow(
     String title,
     String value,
   ) {
     return Padding(
       padding:
-          const EdgeInsets.only(
-        bottom: 12,
+          const EdgeInsets.symmetric(
+        vertical: 8,
       ),
       child: Row(
         crossAxisAlignment:
             CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 100,
+            width: 90,
             child: Text(
               title,
-              style:
-                  const TextStyle(
-                color:
-                    Colors.white54,
+              style: const TextStyle(
+                color: Colors.white54,
                 fontSize: 12,
               ),
             ),
@@ -1294,10 +1097,8 @@ class _HomeDashboardScreenState
           Expanded(
             child: Text(
               value,
-              style:
-                  const TextStyle(
-                color:
-                    Colors.white,
+              style: const TextStyle(
+                color: Colors.white,
                 fontSize: 13,
                 fontWeight:
                     FontWeight.w600,
@@ -1309,60 +1110,738 @@ class _HomeDashboardScreenState
     );
   }
 
-  // ==========================================
-  // EMPTY STATE
-  // ==========================================
+  // =========================================================
+  // ROOM TILE
+  // =========================================================
 
-  Widget _emptyState() {
+  Widget _roomTile(
+    Map<String, dynamic> room,
+  ) {
+    final roomId = room['id'] as String;
+
+    final roomName =
+        room['name'] as String? ?? 'Room';
+
+    final roomDevices =
+        _devices[roomId] ?? [];
+
+    final hasDevice =
+        roomDevices.isNotEmpty;
+
+    final device =
+        hasDevice ? roomDevices.first : null;
+
+    final deviceName =
+        device?['name'] as String? ??
+            'SmartHomeX ESP32';
+
+    final deviceUid =
+        device?['device_uid'] as String? ??
+            '';
+
+    final isOnline =
+        device?['is_online'] as bool? ??
+            false;
+
     return Container(
-      padding:
-          const EdgeInsets.all(30),
-
-      decoration:
-          BoxDecoration(
-        color:
-            const Color(0xFF1E293B),
+      margin:
+          const EdgeInsets.only(bottom: 10),
+      decoration: BoxDecoration(
+        color: const Color(0xff0F172A)
+            .withOpacity(.65),
         borderRadius:
-            BorderRadius.circular(
-          24,
+            BorderRadius.circular(18),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius:
+              BorderRadius.circular(18),
+          onTap: hasDevice
+              ? () => _openRoomControl(
+                    room,
+                    device!,
+                  )
+              : () => _pairDevice(room),
+          child: Padding(
+            padding:
+                const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 12,
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: const Color(
+                      0xff34B7F1,
+                    ).withOpacity(.10),
+                    borderRadius:
+                        BorderRadius.circular(15),
+                  ),
+                  child: const Icon(
+                    Icons.meeting_room_rounded,
+                    color:
+                        Color(0xff34B7F1),
+                    size: 25,
+                  ),
+                ),
+
+                const SizedBox(width: 13),
+
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        roomName,
+                        style:
+                            const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                          fontWeight:
+                              FontWeight.w600,
+                        ),
+                      ),
+
+                      const SizedBox(height: 4),
+
+                      if (hasDevice)
+                        Row(
+                          children: [
+                            Container(
+                              width: 7,
+                              height: 7,
+                              decoration:
+                                  BoxDecoration(
+                                color: isOnline
+                                    ? Colors.green
+                                    : Colors.red,
+                                shape:
+                                    BoxShape.circle,
+                              ),
+                            ),
+
+                            const SizedBox(
+                              width: 6,
+                            ),
+
+                            Expanded(
+                              child: Text(
+                                '$deviceName • '
+                                '${isOnline ? 'Online' : 'Offline'}',
+                                maxLines: 1,
+                                overflow:
+                                    TextOverflow
+                                        .ellipsis,
+                                style:
+                                    const TextStyle(
+                                  color:
+                                      Colors.white54,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        const Text(
+                          'Tap to pair ESP32',
+                          style: TextStyle(
+                            color:
+                                Colors.white38,
+                            fontSize: 11,
+                          ),
+                        ),
+
+                      if (hasDevice &&
+                          deviceUid.isNotEmpty)
+                        Padding(
+                          padding:
+                              const EdgeInsets.only(
+                            top: 3,
+                          ),
+                          child: Text(
+                            deviceUid,
+                            style:
+                                const TextStyle(
+                              color:
+                                  Colors.white24,
+                              fontSize: 9,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+
+                if (!hasDevice)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(
+                      horizontal: 11,
+                      vertical: 7,
+                    ),
+                    decoration:
+                        BoxDecoration(
+                      border: Border.all(
+                        color:
+                            const Color(
+                          0xff34B7F1,
+                        ).withOpacity(.45),
+                      ),
+                      borderRadius:
+                          BorderRadius.circular(
+                        20,
+                      ),
+                    ),
+                    child: const Text(
+                      'PAIR',
+                      style: TextStyle(
+                        color:
+                            Color(0xff34B7F1),
+                        fontSize: 10,
+                        fontWeight:
+                            FontWeight.bold,
+                      ),
+                    ),
+                  ),
+
+                if (hasDevice)
+                  const Icon(
+                    Icons
+                        .arrow_forward_ios_rounded,
+                    color: Colors.white24,
+                    size: 15,
+                  ),
+
+                const SizedBox(width: 4),
+
+                IconButton(
+                  onPressed: () {
+                    _showRoomMenu(room);
+                  },
+                  icon: const Icon(
+                    Icons.more_vert_rounded,
+                    color: Colors.white38,
+                    size: 20,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
+    );
+  }
 
-      child: const Column(
+  // =========================================================
+  // HOME CARD
+  // =========================================================
+
+  Widget _homeCard(
+    Map<String, dynamic> home,
+  ) {
+    final homeId = home['id'] as String;
+
+    final homeName =
+        home['name'] as String? ?? 'My Home';
+
+    final homeRooms =
+        _rooms[homeId] ?? [];
+
+    return Container(
+      margin:
+          const EdgeInsets.only(bottom: 18),
+      padding:
+          const EdgeInsets.fromLTRB(
+        20,
+        18,
+        20,
+        18,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xff111827),
+        borderRadius:
+            BorderRadius.circular(24),
+        border: Border.all(
+          color:
+              Colors.white.withOpacity(.025),
+        ),
+      ),
+      child: Column(
         children: [
-          Icon(
-            Icons.home_work_outlined,
-            color:
-                Color(0xFF34B7F1),
-            size: 55,
+          // ===================================
+          // HOME HEADER
+          // ===================================
+
+          Row(
+            children: [
+              Container(
+                width: 54,
+                height: 54,
+                decoration: BoxDecoration(
+                  color: const Color(
+                    0xff34B7F1,
+                  ).withOpacity(.10),
+                  borderRadius:
+                      BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.home_rounded,
+                  color:
+                      Color(0xff34B7F1),
+                  size: 28,
+                ),
+              ),
+
+              const SizedBox(width: 14),
+
+              Expanded(
+                child: Column(
+                  crossAxisAlignment:
+                      CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      homeName,
+                      style:
+                          const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight:
+                            FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    Text(
+                      '${homeRooms.length} '
+                      '${homeRooms.length == 1 ? 'room' : 'rooms'}',
+                      style:
+                          const TextStyle(
+                        color: Colors.white38,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              IconButton(
+                onPressed: () {
+                  _showHomeMenu(home);
+                },
+                icon: const Icon(
+                  Icons.more_vert_rounded,
+                  color: Colors.white54,
+                ),
+              ),
+            ],
           ),
+
+          const SizedBox(height: 18),
+
+          Container(
+            height: 1,
+            color: Colors.white.withOpacity(.04),
+          ),
+
+          const SizedBox(height: 14),
+
+          // ===================================
+          // ROOMS
+          // ===================================
+
+          if (homeRooms.isEmpty)
+            Padding(
+              padding:
+                  const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.meeting_room_outlined,
+                    color: Colors.white24,
+                    size: 40,
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'No rooms yet',
+                    style: TextStyle(
+                      color: Colors.white54,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  const Text(
+                    'Add a room to get started.',
+                    style: TextStyle(
+                      color: Colors.white30,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            ...homeRooms.map(
+              (room) => _roomTile(room),
+            ),
+
+          const SizedBox(height: 4),
+
+          // ===================================
+          // ADD ROOM
+          // ===================================
 
           SizedBox(
-            height: 18,
+            width: double.infinity,
+            height: 40,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                _addRoom(homeId);
+              },
+              icon: const Icon(
+                Icons.add_rounded,
+                size: 18,
+              ),
+              label: const Text(
+                'Add Room',
+              ),
+              style:
+                  OutlinedButton.styleFrom(
+                foregroundColor:
+                    const Color(
+                  0xff34B7F1,
+                ),
+                side: BorderSide(
+                  color:
+                      const Color(
+                    0xff34B7F1,
+                  ).withOpacity(.55),
+                ),
+                shape:
+                    RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.circular(
+                    15,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =========================================================
+  // BUILD
+  // =========================================================
+
+  @override
+  Widget build(BuildContext context) {
+    final user = _authService.currentUser;
+
+    final fullName =
+        user?.userMetadata?['full_name']
+            as String?;
+
+    final displayName =
+        fullName?.trim().isNotEmpty == true
+            ? fullName!.trim()
+            : 'there';
+
+    return Scaffold(
+      backgroundColor:
+          const Color(0xff0F172A),
+
+      // =====================================================
+      // APP BAR
+      // =====================================================
+
+      appBar: AppBar(
+        backgroundColor:
+            const Color(0xff0F172A),
+        elevation: 0,
+
+        title: const Text(
+          'SmartHomeX',
+          style: TextStyle(
+            fontSize: 23,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+
+        actions: [
+          IconButton(
+            tooltip: 'Refresh',
+            onPressed: _refreshing
+                ? null
+                : _loadHomes,
+            icon: _refreshing
+                ? const SizedBox(
+                    width: 19,
+                    height: 19,
+                    child:
+                        CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color:
+                          Color(0xff34B7F1),
+                    ),
+                  )
+                : const Icon(
+                    Icons.refresh_rounded,
+                  ),
           ),
 
-          Text(
-            'No homes yet',
+          IconButton(
+            tooltip: 'Sign out',
+            onPressed: () async {
+              await _authService.signOut();
+            },
+            icon: const Icon(
+              Icons.logout_rounded,
+            ),
+          ),
+
+          const SizedBox(width: 8),
+        ],
+      ),
+
+      // =====================================================
+      // BODY
+      // =====================================================
+
+      body: _loading
+          ? const Center(
+              child:
+                  CircularProgressIndicator(
+                color:
+                    Color(0xff34B7F1),
+              ),
+            )
+          : RefreshIndicator(
+              color:
+                  const Color(0xff34B7F1),
+
+              onRefresh: _loadHomes,
+
+              child: ListView(
+                physics:
+                    const AlwaysScrollableScrollPhysics(),
+
+                padding:
+                    const EdgeInsets.fromLTRB(
+                  20,
+                  10,
+                  20,
+                  30,
+                ),
+
+                children: [
+                  // =========================================
+                  // WELCOME
+                  // =========================================
+
+                  const Text(
+                    'Welcome back,',
+                    style: TextStyle(
+                      color: Colors.white38,
+                      fontSize: 14,
+                    ),
+                  ),
+
+                  const SizedBox(height: 5),
+
+                  Text(
+                    displayName,
+                    style:
+                        const TextStyle(
+                      color: Colors.white,
+                      fontSize: 27,
+                      fontWeight:
+                          FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 25),
+
+                  // =========================================
+                  // HOMES
+                  // =========================================
+
+                  if (_homes.isEmpty)
+                    _emptyHomeState()
+                  else
+                    ..._homes.map(
+                      (home) => _homeCard(home),
+                    ),
+
+                  // =========================================
+                  // ADD HOME
+                  // =========================================
+
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton.icon(
+                      onPressed: _addHome,
+                      icon: const Icon(
+                        Icons.add_home_rounded,
+                      ),
+                      label: const Text(
+                        'Add Home',
+                        style: TextStyle(
+                          fontWeight:
+                              FontWeight.w600,
+                        ),
+                      ),
+                      style:
+                          ElevatedButton.styleFrom(
+                        backgroundColor:
+                            const Color(
+                          0xff34B7F1,
+                        ),
+                        foregroundColor:
+                            const Color(
+                          0xff0F172A,
+                        ),
+                        elevation: 0,
+                        shape:
+                            RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(
+                            17,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 35),
+
+                  const Center(
+                    child: Text(
+                      'SmartHomeX',
+                      style: TextStyle(
+                        color: Colors.white24,
+                        fontSize: 13,
+                        fontWeight:
+                            FontWeight.w500,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  const Center(
+                    child: Text(
+                      'Smart living. Simple control.',
+                      style: TextStyle(
+                        color: Colors.white12,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+    );
+  }
+
+  // =========================================================
+  // EMPTY HOME STATE
+  // =========================================================
+
+  Widget _emptyHomeState() {
+    return Container(
+      margin:
+          const EdgeInsets.only(bottom: 20),
+      padding:
+          const EdgeInsets.all(35),
+      decoration: BoxDecoration(
+        color:
+            const Color(0xff1E293B),
+        borderRadius:
+            BorderRadius.circular(24),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              color: const Color(
+                0xff34B7F1,
+              ).withOpacity(.10),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.home_rounded,
+              color:
+                  Color(0xff34B7F1),
+              size: 35,
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          const Text(
+            'Create your first home',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 20,
+              fontSize: 18,
               fontWeight:
                   FontWeight.bold,
             ),
           ),
 
-          SizedBox(
-            height: 8,
+          const SizedBox(height: 7),
+
+          const Text(
+            'Add your home and then create '
+            'rooms for your ESP32 devices.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white38,
+              fontSize: 12,
+              height: 1.5,
+            ),
           ),
 
-          Text(
-            'Create your first home to start adding rooms and smart devices.',
-            textAlign:
-                TextAlign.center,
-            style: TextStyle(
-              color:
-                  Colors.white54,
-              height: 1.5,
+          const SizedBox(height: 20),
+
+          OutlinedButton.icon(
+            onPressed: _addHome,
+            icon: const Icon(
+              Icons.add_rounded,
+            ),
+            label: const Text(
+              'Create Home',
+            ),
+            style:
+                OutlinedButton.styleFrom(
+              foregroundColor:
+                  const Color(
+                0xff34B7F1,
+              ),
+              side: BorderSide(
+                color:
+                    const Color(
+                  0xff34B7F1,
+                ).withOpacity(.5),
+              ),
+              shape:
+                  RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(
+                  15,
+                ),
+              ),
             ),
           ),
         ],
