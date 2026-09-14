@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'core/smart_home_background.dart';
+import 'core/smart_home_theme.dart';
 import 'providers/device_provider.dart';
 import 'screens/splash/splash_screen.dart';
-import 'services/mqtt_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,9 +29,8 @@ Future<void> main() async {
   );
 }
 
-
 // =======================================================
-// SMART HOMEX APP
+// SMART HOMEX
 // =======================================================
 
 class SmartHomeX extends StatelessWidget {
@@ -46,20 +46,25 @@ class SmartHomeX extends StatelessWidget {
 
         title: 'SmartHomeX',
 
-        theme: ThemeData(
-          useMaterial3: true,
+        // ===============================================
+        // GLOBAL THEME
+        // ===============================================
 
-          brightness: Brightness.dark,
+        theme: SmartHomeTheme.darkTheme,
 
-          scaffoldBackgroundColor:
-              const Color(0xFF0F172A),
+        // ===============================================
+        // GLOBAL LIVE BACKGROUND
+        //
+        // This is the important change.
+        // The background now sits behind the Navigator,
+        // so it can remain visible across the whole app.
+        // ===============================================
 
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF34B7F1),
-
-            brightness: Brightness.dark,
-          ),
-        ),
+        builder: (context, child) {
+          return SmartHomeBackground(
+            child: child ?? const SizedBox.shrink(),
+          );
+        },
 
         home: const SplashScreen(),
       ),
