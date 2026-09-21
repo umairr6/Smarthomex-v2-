@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:media_kit/media_kit.dart';
 
 import 'core/smart_home_background.dart';
 import 'core/smart_home_theme.dart';
@@ -9,6 +10,14 @@ import 'screens/splash/splash_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // =====================================================
+  // MEDIA KIT
+  // Required for SmartHomeX cinematic splash video
+  // on Windows, Android, iOS, etc.
+  // =====================================================
+
+  MediaKit.ensureInitialized();
 
   // =====================================================
   // SUPABASE

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 
 import '../../services/auth_service.dart';
 import '../../services/device_service.dart';
@@ -20,6 +22,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   final DeviceService _deviceService = DeviceService();
   final AuthService _authService = AuthService();
 
+  // =========================================================
+  // CINEMATIC BACKGROUND
+  // =========================================================
+
+  late final Player _backgroundPlayer;
+  late final VideoController _backgroundVideoController;
+
   List<Map<String, dynamic>> _homes = [];
 
   final Map<String, List<Map<String, dynamic>>> _rooms = {};
@@ -30,11 +39,16 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
 
   late AnimationController _animationController;
 
-  static const Color bg = Color(0xff070B14);
-  static const Color surface = Color(0xff101827);
-  static const Color surface2 = Color(0xff151F31);
-  static const Color primary = Color(0xff34B7F1);
-  static const Color primary2 = Color(0xff6C63FF);
+  // =========================================================
+  // LUXURY COLORS
+  // =========================================================
+
+  static const Color bg = Color(0xff070707);
+  static const Color surface = Color(0xff111111);
+  static const Color surface2 = Color(0xff171717);
+
+  static const Color primary = Color(0xFFD6B36A);
+  static const Color primaryLight = Color(0xFFF2D18B);
 
   @override
   void initState() {
@@ -45,11 +59,40 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
       duration: const Duration(milliseconds: 900),
     );
 
+    // Start the cinematic background.
+    _backgroundPlayer = Player();
+    _backgroundVideoController =
+        VideoController(_backgroundPlayer);
+
+    _startBackgroundVideo();
+
     _loadHomes();
+  }
+
+  // =========================================================
+  // START BACKGROUND VIDEO
+  // =========================================================
+
+  Future<void> _startBackgroundVideo() async {
+    try {
+      await _backgroundPlayer.open(
+        Media(
+          'asset:///assets/videos/smarthomex_intro.mp4',
+        ),
+      );
+
+      await _backgroundPlayer.setVolume(0);
+
+    } catch (e) {
+      debugPrint(
+        'SmartHomeX background video error: $e',
+      );
+    }
   }
 
   @override
   void dispose() {
+    _backgroundPlayer.dispose();
     _animationController.dispose();
     super.dispose();
   }
@@ -776,8 +819,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _infoRow('Room',
-                  room['name'] as String? ?? 'Room'),
+              _infoRow(
+                'Room',
+                room['name'] as String? ?? 'Room',
+              ),
               _infoRow('Device UID', uid),
               _infoRow('IP Address', ip),
               _infoRow('Relays', '$relayCount'),
@@ -872,7 +917,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               style: ElevatedButton.styleFrom(
                 backgroundColor:
                     destructive ? Colors.redAccent : primary,
-                foregroundColor: Colors.white,
+                foregroundColor: Colors.black,
               ),
               onPressed: () =>
                   Navigator.pop(dialogContext, true),
@@ -992,21 +1037,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     return Container(
       margin: const EdgeInsets.only(bottom: 24),
       decoration: BoxDecoration(
+        color: Colors.black.withOpacity(.48),
         borderRadius: BorderRadius.circular(30),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            surface2,
-            surface,
-          ],
-        ),
         border: Border.all(
-          color: Colors.white.withOpacity(.06),
+          color: Colors.white.withOpacity(.13),
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(.20),
+            color: Colors.black.withOpacity(.35),
             blurRadius: 30,
             offset: const Offset(0, 12),
           ),
@@ -1022,7 +1060,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               connectedDevices,
               home,
             ),
-
             Padding(
               padding: const EdgeInsets.fromLTRB(
                 16,
@@ -1036,9 +1073,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                     _emptyRooms()
                   else
                     _roomGrid(homeRooms),
-
                   const SizedBox(height: 12),
-
                   _addRoomButton(homeId),
                 ],
               ),
@@ -1067,7 +1102,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           end: Alignment.bottomRight,
           colors: [
             primary.withOpacity(.16),
-            primary2.withOpacity(.06),
+            Colors.black.withOpacity(.05),
             Colors.transparent,
           ],
         ),
@@ -1080,28 +1115,25 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                 width: 58,
                 height: 58,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      primary.withOpacity(.25),
-                      primary2.withOpacity(.18),
-                    ],
-                  ),
+                  color: primary.withOpacity(.14),
                   borderRadius: BorderRadius.circular(19),
                   border: Border.all(
-                    color: primary.withOpacity(.20),
+                    color: primary.withOpacity(.30),
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: primary.withOpacity(.12),
+                      blurRadius: 18,
+                    ),
+                  ],
                 ),
                 child: const Icon(
                   Icons.home_work_rounded,
-                  color: primary,
+                  color: primaryLight,
                   size: 29,
                 ),
               ),
-
               const SizedBox(width: 15),
-
               Expanded(
                 child: Column(
                   crossAxisAlignment:
@@ -1148,10 +1180,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                   ],
                 ),
               ),
-
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(.06),
+                  color: Colors.white.withOpacity(.07),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: IconButton(
@@ -1165,9 +1196,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               ),
             ],
           ),
-
           const SizedBox(height: 20),
-
           Row(
             children: [
               Expanded(
@@ -1213,10 +1242,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         vertical: 13,
       ),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(.16),
+        color: Colors.black.withOpacity(.28),
         borderRadius: BorderRadius.circular(17),
         border: Border.all(
-          color: Colors.white.withOpacity(.035),
+          color: Colors.white.withOpacity(.08),
         ),
       ),
       child: Column(
@@ -1224,7 +1253,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           Icon(
             icon,
             size: 18,
-            color: primary,
+            color: primaryLight,
           ),
           const SizedBox(height: 7),
           Text(
@@ -1323,19 +1352,19 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         borderRadius: BorderRadius.circular(22),
         onTap: hasDevice
             ? () => _openRoomControl(
-                  room,
-                  device!,
-                )
+                room,
+                device!,
+              )
             : () => _pairDevice(room),
         child: Container(
           padding: const EdgeInsets.all(15),
           decoration: BoxDecoration(
-            color: bg.withOpacity(.72),
+            color: Colors.black.withOpacity(.42),
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
               color: hasDevice
-                  ? primary.withOpacity(.10)
-                  : Colors.white.withOpacity(.045),
+                  ? primary.withOpacity(.20)
+                  : Colors.white.withOpacity(.08),
             ),
           ),
           child: Column(
@@ -1349,15 +1378,15 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                     height: 43,
                     decoration: BoxDecoration(
                       color: hasDevice
-                          ? primary.withOpacity(.11)
-                          : Colors.white.withOpacity(.05),
+                          ? primary.withOpacity(.13)
+                          : Colors.white.withOpacity(.06),
                       borderRadius:
                           BorderRadius.circular(14),
                     ),
                     child: Icon(
                       _roomIcon(roomName),
                       color: hasDevice
-                          ? primary
+                          ? primaryLight
                           : Colors.white38,
                       size: 21,
                     ),
@@ -1380,9 +1409,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                   ),
                 ],
               ),
-
               const Spacer(),
-
               Text(
                 roomName,
                 maxLines: 1,
@@ -1392,9 +1419,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                   fontWeight: FontWeight.w700,
                 ),
               ),
-
               const SizedBox(height: 6),
-
               if (hasDevice)
                 Row(
                   children: [
@@ -1435,13 +1460,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                     const Icon(
                       Icons.add_circle_outline_rounded,
                       size: 13,
-                      color: primary,
+                      color: primaryLight,
                     ),
                     const SizedBox(width: 5),
                     const Text(
                       'Tap to pair ESP32',
                       style: TextStyle(
-                        color: primary,
+                        color: primaryLight,
                         fontSize: 9.5,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1470,10 +1495,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           onTap: () => _addRoom(homeId),
           child: Container(
             decoration: BoxDecoration(
-              color: primary.withOpacity(.055),
-              borderRadius: BorderRadius.circular(17),
+              color: primary.withOpacity(.09),
+              borderRadius:
+                  BorderRadius.circular(17),
               border: Border.all(
-                color: primary.withOpacity(.18),
+                color: primary.withOpacity(.25),
               ),
             ),
             child: const Row(
@@ -1482,14 +1508,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               children: [
                 Icon(
                   Icons.add_rounded,
-                  color: primary,
+                  color: primaryLight,
                   size: 19,
                 ),
                 SizedBox(width: 7),
                 Text(
                   'Add Room',
                   style: TextStyle(
-                    color: primary,
+                    color: primaryLight,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1524,7 +1550,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             ),
             child: const Icon(
               Icons.meeting_room_outlined,
-              color: primary,
+              color: primaryLight,
               size: 28,
             ),
           ),
@@ -1566,17 +1592,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         32,
       ),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            surface2,
-            surface,
-          ],
-        ),
+        color: Colors.black.withOpacity(.48),
         borderRadius: BorderRadius.circular(30),
         border: Border.all(
-          color: Colors.white.withOpacity(.05),
+          color: Colors.white.withOpacity(.10),
         ),
       ),
       child: Column(
@@ -1586,25 +1605,18 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             height: 82,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [
-                  primary.withOpacity(.16),
-                  primary2.withOpacity(.12),
-                ],
-              ),
+              color: primary.withOpacity(.12),
               border: Border.all(
-                color: primary.withOpacity(.15),
+                color: primary.withOpacity(.22),
               ),
             ),
             child: const Icon(
               Icons.home_work_rounded,
-              color: primary,
+              color: primaryLight,
               size: 38,
             ),
           ),
-
           const SizedBox(height: 20),
-
           const Text(
             'Welcome to SmartHomeX',
             textAlign: TextAlign.center,
@@ -1613,9 +1625,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               fontWeight: FontWeight.bold,
             ),
           ),
-
           const SizedBox(height: 8),
-
           const Text(
             'Create your first home and start building your smart environment.',
             textAlign: TextAlign.center,
@@ -1625,9 +1635,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               height: 1.5,
             ),
           ),
-
           const SizedBox(height: 22),
-
           SizedBox(
             height: 50,
             child: ElevatedButton.icon(
@@ -1643,7 +1651,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: primary,
-                foregroundColor: bg,
+                foregroundColor: Colors.black,
                 elevation: 0,
                 padding:
                     const EdgeInsets.symmetric(
@@ -1761,12 +1769,18 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             : 'there';
 
     return Scaffold(
-      backgroundColor: bg,
+      backgroundColor: Colors.black,
+      extendBodyBehindAppBar: true,
+
+      // =======================================================
+      // APP BAR
+      // =======================================================
 
       appBar: AppBar(
-        backgroundColor: bg,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
 
         titleSpacing: 20,
 
@@ -1776,26 +1790,20 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    primary.withOpacity(.22),
-                    primary2.withOpacity(.18),
-                  ],
-                ),
+                color: Colors.black.withOpacity(.45),
                 borderRadius:
                     BorderRadius.circular(12),
+                border: Border.all(
+                  color: primary.withOpacity(.35),
+                ),
               ),
               child: const Icon(
                 Icons.home_rounded,
-                color: primary,
+                color: primaryLight,
                 size: 21,
               ),
             ),
-
             const SizedBox(width: 11),
-
             const Text(
               'SmartHomeX',
               style: TextStyle(
@@ -1809,12 +1817,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
 
         actions: [
           Container(
-            margin: const EdgeInsets.only(
-              right: 5,
-            ),
+            margin: const EdgeInsets.only(right: 5),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(.045),
-              borderRadius: BorderRadius.circular(13),
+              color: Colors.black.withOpacity(.40),
+              borderRadius:
+                  BorderRadius.circular(13),
+              border: Border.all(
+                color: Colors.white.withOpacity(.10),
+              ),
             ),
             child: IconButton(
               tooltip: 'Refresh',
@@ -1827,7 +1837,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                       child:
                           CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: primary,
+                        color: primaryLight,
                       ),
                     )
                   : const Icon(
@@ -1838,12 +1848,15 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           ),
 
           Container(
-            margin: const EdgeInsets.only(
-              right: 12,
-            ),
+            margin:
+                const EdgeInsets.only(right: 12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(.045),
-              borderRadius: BorderRadius.circular(13),
+              color: Colors.black.withOpacity(.40),
+              borderRadius:
+                  BorderRadius.circular(13),
+              border: Border.all(
+                color: Colors.white.withOpacity(.10),
+              ),
             ),
             child: IconButton(
               tooltip: 'Sign out',
@@ -1859,106 +1872,146 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         ],
       ),
 
-      body: _loading
-          ? const Center(
-              child: CircularProgressIndicator(
-                color: primary,
-              ),
-            )
-          : RefreshIndicator(
-              color: primary,
-              backgroundColor: surface2,
-              onRefresh: _loadHomes,
+      // =======================================================
+      // BODY
+      // =======================================================
 
-              child: ListView(
-                physics:
-                    const AlwaysScrollableScrollPhysics(),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
 
-                padding: const EdgeInsets.fromLTRB(
-                  18,
-                  8,
-                  18,
-                  35,
+          // ---------------------------------------------------
+          // FULL SCREEN CINEMATIC VIDEO
+          // ---------------------------------------------------
+
+          Positioned.fill(
+            child: Video(
+              controller: _backgroundVideoController,
+              fit: BoxFit.cover,
+            ),
+          ),
+
+          // ---------------------------------------------------
+          // DARK CINEMATIC OVERLAY
+          // ---------------------------------------------------
+
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(.48),
+                    Colors.black.withOpacity(.18),
+                    Colors.black.withOpacity(.38),
+                    Colors.black.withOpacity(.88),
+                  ],
+                  stops: const [
+                    0.0,
+                    0.28,
+                    0.62,
+                    1.0,
+                  ],
                 ),
-
-                children: [
-                  // =========================================
-                  // GREETING
-                  // =========================================
-
-                  FadeTransition(
-                    opacity:
-                        _animationController,
-                    child: SlideTransition(
-                      position: Tween<Offset>(
-                        begin:
-                            const Offset(0, .12),
-                        end: Offset.zero,
-                      ).animate(
-                        CurvedAnimation(
-                          parent:
-                              _animationController,
-                          curve:
-                              Curves.easeOutCubic,
-                        ),
-                      ),
-                      child: _greeting(
-                        displayName,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 25),
-
-                  // =========================================
-                  // HOMES
-                  // =========================================
-
-                  if (_homes.isEmpty)
-                    _emptyHomeState()
-                  else
-                    ..._homes.map(
-                      (home) => _homeCard(home),
-                    ),
-
-                  // =========================================
-                  // ADD HOME
-                  // =========================================
-
-                  _addHomeButton(),
-
-                  const SizedBox(height: 35),
-
-                  // =========================================
-                  // FOOTER
-                  // =========================================
-
-                  const Center(
-                    child: Text(
-                      'SMARTHOMEX',
-                      style: TextStyle(
-                        color: Colors.white24,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 2,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 6),
-
-                  const Center(
-                    child: Text(
-                      'Smart living. Simple control.',
-                      style: TextStyle(
-                        color: Colors.white12,
-                        fontSize: 10,
-                      ),
-                    ),
-                  ),
-                ],
               ),
             ),
+          ),
+
+          // ---------------------------------------------------
+          // CONTENT
+          // ---------------------------------------------------
+
+          SafeArea(
+            bottom: false,
+            child: _loading
+                ? const Center(
+                    child:
+                        CircularProgressIndicator(
+                      color: primaryLight,
+                    ),
+                  )
+                : RefreshIndicator(
+                    color: primaryLight,
+                    backgroundColor: surface2,
+                    onRefresh: _loadHomes,
+                    child: ListView(
+                      physics:
+                          const AlwaysScrollableScrollPhysics(),
+                      padding:
+                          const EdgeInsets.fromLTRB(
+                        18,
+                        72,
+                        18,
+                        35,
+                      ),
+                      children: [
+                        FadeTransition(
+                          opacity:
+                              _animationController,
+                          child: SlideTransition(
+                            position:
+                                Tween<Offset>(
+                              begin:
+                                  const Offset(0, .12),
+                              end: Offset.zero,
+                            ).animate(
+                              CurvedAnimation(
+                                parent:
+                                    _animationController,
+                                curve: Curves
+                                    .easeOutCubic,
+                              ),
+                            ),
+                            child: _greeting(
+                              displayName,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 25),
+
+                        if (_homes.isEmpty)
+                          _emptyHomeState()
+                        else
+                          ..._homes.map(
+                            (home) => _homeCard(home),
+                          ),
+
+                        _addHomeButton(),
+
+                        const SizedBox(height: 35),
+
+                        const Center(
+                          child: Text(
+                            'SMARTHOMEX',
+                            style: TextStyle(
+                              color: Colors.white24,
+                              fontSize: 11,
+                              fontWeight:
+                                  FontWeight.w700,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 6),
+
+                        const Center(
+                          child: Text(
+                            'Smart living. Simple control.',
+                            style: TextStyle(
+                              color: Colors.white12,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1981,17 +2034,15 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
+                    primaryLight,
                     primary,
-                    primary2,
                   ],
                 ),
                 borderRadius:
                     BorderRadius.circular(5),
               ),
             ),
-
             const SizedBox(width: 12),
-
             Column(
               crossAxisAlignment:
                   CrossAxisAlignment.start,
@@ -1999,15 +2050,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                 const Text(
                   'WELCOME BACK',
                   style: TextStyle(
-                    color: Colors.white38,
+                    color: Colors.white54,
                     fontSize: 10,
                     fontWeight: FontWeight.w700,
                     letterSpacing: 1.7,
                   ),
                 ),
-
                 const SizedBox(height: 3),
-
                 Text(
                   name,
                   style: const TextStyle(
@@ -2020,13 +2069,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             ),
           ],
         ),
-
         const SizedBox(height: 13),
-
         const Text(
           'Control your home from anywhere.',
           style: TextStyle(
-            color: Colors.white38,
+            color: Colors.white54,
             fontSize: 12,
           ),
         ),
@@ -2045,22 +2092,16 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(19),
+          borderRadius:
+              BorderRadius.circular(19),
           onTap: _addHome,
           child: Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [
-                  primary.withOpacity(.13),
-                  primary2.withOpacity(.08),
-                ],
-              ),
+              color: primary.withOpacity(.12),
               borderRadius:
                   BorderRadius.circular(19),
               border: Border.all(
-                color: primary.withOpacity(.18),
+                color: primary.withOpacity(.35),
               ),
             ),
             child: const Row(
@@ -2069,14 +2110,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               children: [
                 Icon(
                   Icons.add_home_rounded,
-                  color: primary,
+                  color: primaryLight,
                   size: 20,
                 ),
                 SizedBox(width: 9),
                 Text(
                   'Add Another Home',
                   style: TextStyle(
-                    color: primary,
+                    color: primaryLight,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                   ),
