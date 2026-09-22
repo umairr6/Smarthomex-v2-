@@ -1,81 +1,53 @@
 import 'package:flutter/material.dart';
 
 class SmartHomeColors {
-  // ==================================================
-  // BACKGROUND
-  // ==================================================
+  SmartHomeColors._();
 
-  static const Color background =
-      Color(0xFF050816);
+  // ==========================================================
+  // BRAND
+  // ==========================================================
 
-  static const Color surface =
-      Color(0xFF101526);
+  static const Color gold = Color(0xFFD6B36A);
+  static const Color goldLight = Color(0xFFF2D18B);
+  static const Color goldDark = Color(0xFF9C7A3C);
 
-  static const Color surfaceLight =
-      Color(0xFF182136);
+  // ==========================================================
+  // BACKGROUNDS
+  // ==========================================================
 
-  // ==================================================
-  // NEON BRAND
-  // ==================================================
+  static const Color background = Color(0xFF070707);
+  static const Color surface = Color(0xFF111111);
+  static const Color surfaceElevated = Color(0xFF171717);
+  static const Color surfaceGlass = Color(0xCC111111);
 
-  static const Color primary =
-      Color(0xFF00E5FF);
-
-  static const Color primaryBright =
-      Color(0xFF22D3EE);
-
-  static const Color secondary =
-      Color(0xFF8B5CF6);
-
-  static const Color blue =
-      Color(0xFF3B82F6);
-
-  static const Color cyan =
-      Color(0xFF06B6D4);
-
-  // ==================================================
-  // STATUS
-  // ==================================================
-
-  static const Color success =
-      Color(0xFF22C55E);
-
-  static const Color danger =
-      Color(0xFFFB7185);
-
-  static const Color warning =
-      Color(0xFFFBBF24);
-
-  // ==================================================
+  // ==========================================================
   // TEXT
-  // ==================================================
+  // ==========================================================
 
-  static const Color textPrimary =
-      Colors.white;
+  static const Color textPrimary = Colors.white;
+  static const Color textSecondary = Colors.white70;
+  static const Color textMuted = Colors.white54;
+  static const Color textDisabled = Colors.white38;
 
-  static const Color textSecondary =
-      Color(0xFFD1D5DB);
+  // ==========================================================
+  // STATUS
+  // ==========================================================
 
-  static const Color textMuted =
-      Color(0xFF94A3B8);
+  static const Color online = Color(0xFF4CAF50);
+  static const Color offline = Color(0xFFE53935);
+  static const Color warning = Color(0xFFFFB74D);
 
-  // ==================================================
-  // GLASS
-  // ==================================================
+  // ==========================================================
+  // BORDERS / DIVIDERS
+  // ==========================================================
 
-  static const Color glass =
-      Color(0x6610182B);
+  static const Color border = Color(0x22FFFFFF);
+  static const Color borderGold = Color(0x66D6B36A);
 
-  static const Color glassStrong =
-      Color(0x9910182B);
+  // ==========================================================
+  // OVERLAYS
+  // ==========================================================
 
-  // ==================================================
-  // BORDERS
-  // ==================================================
-
-  static const Color border =
-      Color(0x18FFFFFF);
-
-  static const Color borderBright =
-      Color(0x5500E5FF);
+  static const Color overlay = Color(0x99000000);
+  static const Color overlayStrong = Color(0xCC000000);
 }

@@ -3,99 +3,119 @@ import 'package:flutter/material.dart';
 import 'colors.dart';
 
 class SmartHomeTheme {
+  SmartHomeTheme._();
+
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
 
       brightness: Brightness.dark,
 
-      // ==========================================
-      // IMPORTANT
-      // ==========================================
-
-      scaffoldBackgroundColor: Colors.transparent,
-
-      canvasColor: Colors.transparent,
-
-      fontFamily: 'Poppins',
-
-      // ==========================================
-      // COLORS
-      // ==========================================
+      scaffoldBackgroundColor:
+          SmartHomeColors.background,
 
       colorScheme: const ColorScheme.dark(
-        primary: SmartHomeColors.primary,
-        secondary: SmartHomeColors.secondary,
+        primary: SmartHomeColors.gold,
+        onPrimary: Colors.black,
+
+        secondary: SmartHomeColors.goldLight,
+        onSecondary: Colors.black,
+
         surface: SmartHomeColors.surface,
-        error: SmartHomeColors.danger,
+        onSurface: SmartHomeColors.textPrimary,
+
+        error: SmartHomeColors.offline,
+        onError: Colors.white,
       ),
 
-      // ==========================================
+      // ========================================================
       // APP BAR
-      // ==========================================
+      // ========================================================
 
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
-        foregroundColor: Colors.white,
+        foregroundColor: SmartHomeColors.textPrimary,
         elevation: 0,
-        surfaceTintColor: Colors.transparent,
         centerTitle: false,
+        surfaceTintColor: Colors.transparent,
       ),
 
-      // ==========================================
-      // INPUT
-      // ==========================================
+      // ========================================================
+      // CARD
+      // ========================================================
+
+      cardTheme: CardThemeData(
+        color: SmartHomeColors.surface,
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(
+            color: SmartHomeColors.border,
+            width: 1,
+          ),
+        ),
+      ),
+
+      // ========================================================
+      // INPUT FIELDS
+      // ========================================================
 
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-
-        fillColor: Colors.white.withOpacity(0.055),
+        fillColor: SmartHomeColors.surfaceElevated,
 
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(
             color: SmartHomeColors.border,
           ),
         ),
 
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(
             color: SmartHomeColors.border,
           ),
         ),
 
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(
-            color: SmartHomeColors.primary,
-            width: 1.5,
+            color: SmartHomeColors.gold,
+            width: 1.4,
           ),
         ),
 
-        hintStyle: const TextStyle(
+        labelStyle: const TextStyle(
           color: SmartHomeColors.textMuted,
         ),
+
+        hintStyle: const TextStyle(
+          color: SmartHomeColors.textDisabled,
+        ),
+
+        prefixIconColor: SmartHomeColors.gold,
       ),
 
-      // ==========================================
-      // BUTTON
-      // ==========================================
+      // ========================================================
+      // ELEVATED BUTTON
+      // ========================================================
 
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: SmartHomeColors.primary,
+          backgroundColor: SmartHomeColors.gold,
           foregroundColor: Colors.black,
 
           elevation: 0,
 
           padding: const EdgeInsets.symmetric(
-            horizontal: 24,
+            horizontal: 22,
             vertical: 15,
           ),
 
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(17),
+            borderRadius: BorderRadius.circular(15),
           ),
 
           textStyle: const TextStyle(
@@ -104,26 +124,109 @@ class SmartHomeTheme {
         ),
       ),
 
-      // ==========================================
-      // SNACKBAR
-      // ==========================================
+      // ========================================================
+      // OUTLINED BUTTON
+      // ========================================================
 
-      snackBarTheme: SnackBarThemeData(
-        backgroundColor: SmartHomeColors.surfaceLight,
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: SmartHomeColors.goldLight,
 
-        behavior: SnackBarBehavior.floating,
+          side: const BorderSide(
+            color: SmartHomeColors.borderGold,
+          ),
 
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+          padding: const EdgeInsets.symmetric(
+            horizontal: 22,
+            vertical: 15,
+          ),
+
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
         ),
       ),
 
-      // ==========================================
+      // ========================================================
+      // TEXT BUTTON
+      // ========================================================
+
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: SmartHomeColors.goldLight,
+        ),
+      ),
+
+      // ========================================================
+      // SWITCH
+      // ========================================================
+
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith<Color?>(
+          (states) {
+            if (states.contains(WidgetState.selected)) {
+              return SmartHomeColors.goldLight;
+            }
+
+            return SmartHomeColors.textMuted;
+          },
+        ),
+
+        trackColor: WidgetStateProperty.resolveWith<Color?>(
+          (states) {
+            if (states.contains(WidgetState.selected)) {
+              return SmartHomeColors.goldDark;
+            }
+
+            return SmartHomeColors.surfaceElevated;
+          },
+        ),
+
+        trackOutlineColor:
+            WidgetStateProperty.all(
+          SmartHomeColors.border,
+        ),
+      ),
+
+      // ========================================================
+      // PROGRESS INDICATOR
+      // ========================================================
+
+      progressIndicatorTheme:
+          const ProgressIndicatorThemeData(
+        color: SmartHomeColors.gold,
+      ),
+
+      // ========================================================
       // DIVIDER
-      // ==========================================
+      // ========================================================
 
       dividerTheme: const DividerThemeData(
         color: SmartHomeColors.border,
+        thickness: 1,
+      ),
+
+      // ========================================================
+      // ICON
+      // ========================================================
+
+      iconTheme: const IconThemeData(
+        color: SmartHomeColors.goldLight,
+      ),
+
+      // ========================================================
+      // SNACKBAR
+      // ========================================================
+
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: SmartHomeColors.surfaceElevated,
+        contentTextStyle: const TextStyle(
+          color: SmartHomeColors.textPrimary,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        behavior: SnackBarBehavior.floating,
       ),
     );
   }

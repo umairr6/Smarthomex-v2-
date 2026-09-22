@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
 
+import '../../core/colors.dart';
 import '../../services/device_service.dart';
 import '../../services/mqtt_service.dart';
 
@@ -30,6 +33,9 @@ class _RoomControlScreenState
   final MqttService _mqttService =
       MqttService();
 
+  late final Player _backgroundPlayer;
+  late final VideoController _backgroundVideoController;
+
   List<Map<String, dynamic>> _relays = [];
 
   bool _loading = true;
@@ -40,11 +46,43 @@ class _RoomControlScreenState
   void initState() {
     super.initState();
 
+    // =====================================================
+    // CINEMATIC ROOM BACKGROUND
+    // =====================================================
+
+    _backgroundPlayer = Player();
+    _backgroundVideoController =
+        VideoController(_backgroundPlayer);
+
+    _startBackgroundVideo();
+
     _mqttService.setStateListener(
       _handleMqttState,
     );
 
     _loadRoom();
+  }
+
+  // =====================================================
+  // START ROOM BACKGROUND VIDEO
+  // Plays once and remains on the final frame.
+  // =====================================================
+
+  Future<void> _startBackgroundVideo() async {
+    try {
+      await _backgroundPlayer.open(
+        Media('asset:///assets/videos/smarthomex_intro.mp4'),
+      );
+
+      await _backgroundPlayer.setVolume(0);
+
+      // No loop:
+      // MediaKit stops at the end of the media.
+    } catch (e) {
+      debugPrint(
+        'SmartHomeX room background video error: $e',
+      );
+    }
   }
 
   // =====================================================
@@ -259,7 +297,7 @@ class _RoomControlScreenState
     bool isOn,
   ) {
     return isOn
-        ? const Color(0xff34B7F1)
+        ? SmartHomeColors.gold
         : Colors.white38;
   }
 
@@ -270,6 +308,7 @@ class _RoomControlScreenState
   @override
   void dispose() {
     _mqttService.disconnect();
+    _backgroundPlayer.dispose();
 
     super.dispose();
   }
@@ -283,13 +322,11 @@ class _RoomControlScreenState
     BuildContext context,
   ) {
     return Scaffold(
-      backgroundColor:
-          const Color(0xff0F172A),
+      backgroundColor: SmartHomeColors.background,
+      extendBodyBehindAppBar: true,
 
       appBar: AppBar(
-        backgroundColor:
-            const Color(0xff0F172A),
-
+        backgroundColor: Colors.transparent,
         elevation: 0,
 
         title: Column(
@@ -356,12 +393,57 @@ class _RoomControlScreenState
         ],
       ),
 
-      body: _loading
-          ? const Center(
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          // ==================================================
+          // CINEMATIC VIDEO BACKGROUND
+          // ==================================================
+
+          Positioned.fill(
+            child: Video(
+              controller: _backgroundVideoController,
+              fit: BoxFit.cover,
+            ),
+          ),
+
+          // ==================================================
+          // DARK OVERLAY
+          // ==================================================
+
+          Positioned.fill(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.28),
+                    Colors.black.withOpacity(0.42),
+                    Colors.black.withOpacity(0.72),
+                    Colors.black.withOpacity(0.88),
+                  ],
+                  stops: const [
+                    0.0,
+                    0.35,
+                    0.70,
+                    1.0,
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // ==================================================
+          // ROOM CONTROLS
+          // ==================================================
+
+          SafeArea(
+            child: _loading ? const Center(
               child:
                   CircularProgressIndicator(
                 color:
-                    Color(0xff34B7F1),
+                    SmartHomeColors.gold,
               ),
             )
           : RefreshIndicator(
@@ -386,9 +468,7 @@ class _RoomControlScreenState
                     decoration:
                         BoxDecoration(
                       color:
-                          const Color(
-                        0xff1E293B,
-                      ),
+                          SmartHomeColors.surface,
 
                       borderRadius:
                           BorderRadius.circular(
@@ -405,9 +485,7 @@ class _RoomControlScreenState
                           decoration:
                               BoxDecoration(
                             color:
-                                const Color(
-                              0xff34B7F1,
-                            ).withOpacity(.12),
+                                SmartHomeColors.gold.withOpacity(.12),
 
                             borderRadius:
                                 BorderRadius
@@ -422,9 +500,7 @@ class _RoomControlScreenState
                                 .router_rounded,
 
                             color:
-                                Color(
-                              0xff34B7F1,
-                            ),
+                                SmartHomeColors.gold,
 
                             size: 28,
                           ),
@@ -565,9 +641,7 @@ class _RoomControlScreenState
                       decoration:
                           BoxDecoration(
                         color:
-                            const Color(
-                          0xff1E293B,
-                        ),
+                            SmartHomeColors.surface,
 
                         borderRadius:
                             BorderRadius
@@ -664,12 +738,8 @@ class _RoomControlScreenState
                             decoration:
                                 BoxDecoration(
                               color: isOn
-                                  ? const Color(
-                                      0xff243B53,
-                                    )
-                                  : const Color(
-                                      0xff1E293B,
-                                    ),
+                                  ? SmartHomeColors.surfaceElevated
+                                  : SmartHomeColors.surface,
 
                               borderRadius:
                                   BorderRadius
@@ -680,9 +750,7 @@ class _RoomControlScreenState
                               border:
                                   Border.all(
                                 color: isOn
-                                    ? const Color(
-                                        0xff34B7F1,
-                                      ).withOpacity(
+                                    ? SmartHomeColors.gold.withOpacity(
                                         .55,
                                       )
                                     : Colors
@@ -715,9 +783,7 @@ class _RoomControlScreenState
                                       decoration:
                                           BoxDecoration(
                                         color: isOn
-                                            ? const Color(
-                                                0xff34B7F1,
-                                              ).withOpacity(
+                                            ? SmartHomeColors.gold.withOpacity(
                                                 .14,
                                               )
                                             : Colors
@@ -761,9 +827,7 @@ class _RoomControlScreenState
                                                   ),
 
                                       activeThumbColor:
-                                          const Color(
-                                        0xff34B7F1,
-                                      ),
+                                          SmartHomeColors.gold,
                                     ),
                                   ],
                                 ),
@@ -806,9 +870,7 @@ class _RoomControlScreenState
                                   style:
                                       TextStyle(
                                     color: isOn
-                                        ? const Color(
-                                            0xff34B7F1,
-                                          )
+                                        ? SmartHomeColors.gold
                                         : Colors
                                             .white38,
 
@@ -916,6 +978,10 @@ class _RoomControlScreenState
                 ],
               ),
             ),
+
+          ),
+        ],
+      ),
     );
   }
 
@@ -931,7 +997,7 @@ class _RoomControlScreenState
   }) {
     return Material(
       color:
-          const Color(0xff1E293B),
+          SmartHomeColors.surface,
 
       borderRadius:
           BorderRadius.circular(
@@ -961,9 +1027,7 @@ class _RoomControlScreenState
                 decoration:
                     BoxDecoration(
                   color:
-                      const Color(
-                    0xff34B7F1,
-                  ).withOpacity(.10),
+                      SmartHomeColors.gold.withOpacity(.10),
 
                   borderRadius:
                       BorderRadius.circular(
@@ -975,9 +1039,7 @@ class _RoomControlScreenState
                   icon,
 
                   color:
-                      const Color(
-                    0xff34B7F1,
-                  ),
+                      SmartHomeColors.gold,
                 ),
               ),
 
