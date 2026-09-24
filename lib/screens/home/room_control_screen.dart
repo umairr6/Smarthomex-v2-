@@ -177,6 +177,24 @@ class _RoomControlScreenState
       return;
     }
 
+    // MQTT service sends explicit availability events.
+    final availability =
+        state['_availability'] as String?;
+
+    if (availability == 'offline') {
+      setState(() {
+        _online = false;
+      });
+      return;
+    }
+
+    if (availability == 'online') {
+      setState(() {
+        _online = true;
+      });
+      return;
+    }
+
     setState(() {
       _online = true;
 
@@ -467,13 +485,25 @@ class _RoomControlScreenState
 
                     decoration:
                         BoxDecoration(
-                      color:
-                          SmartHomeColors.surface,
+                      color: Colors.black.withOpacity(.34),
 
                       borderRadius:
                           BorderRadius.circular(
                         22,
                       ),
+
+                      border: Border.all(
+                        color: Colors.white.withOpacity(.10),
+                        width: 1,
+                      ),
+
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(.22),
+                          blurRadius: 24,
+                          offset: const Offset(0, 10),
+                        ),
+                      ],
                     ),
 
                     child: Row(
@@ -640,13 +670,16 @@ class _RoomControlScreenState
 
                       decoration:
                           BoxDecoration(
-                        color:
-                            SmartHomeColors.surface,
+                        color: Colors.black.withOpacity(.34),
 
                         borderRadius:
                             BorderRadius
                                 .circular(
                           20,
+                        ),
+
+                        border: Border.all(
+                          color: Colors.white.withOpacity(.10),
                         ),
                       ),
 
@@ -685,7 +718,7 @@ class _RoomControlScreenState
                             14,
 
                         childAspectRatio:
-                            1.05,
+                            1.55,
                       ),
 
                       itemBuilder:
@@ -738,8 +771,8 @@ class _RoomControlScreenState
                             decoration:
                                 BoxDecoration(
                               color: isOn
-                                  ? SmartHomeColors.surfaceElevated
-                                  : SmartHomeColors.surface,
+                                  ? SmartHomeColors.gold.withOpacity(.12)
+                                  : Colors.black.withOpacity(.34),
 
                               borderRadius:
                                   BorderRadius
@@ -750,17 +783,21 @@ class _RoomControlScreenState
                               border:
                                   Border.all(
                                 color: isOn
-                                    ? SmartHomeColors.gold.withOpacity(
-                                        .55,
-                                      )
-                                    : Colors
-                                        .white
-                                        .withOpacity(
-                                        .04,
-                                      ),
+                                    ? SmartHomeColors.gold.withOpacity(.65)
+                                    : Colors.white.withOpacity(.10),
 
-                                width: 1.2,
+                                width: isOn ? 1.3 : 1.0,
                               ),
+
+                              boxShadow: [
+                                BoxShadow(
+                                  color: isOn
+                                      ? SmartHomeColors.gold.withOpacity(.10)
+                                      : Colors.black.withOpacity(.18),
+                                  blurRadius: isOn ? 24 : 18,
+                                  offset: const Offset(0, 8),
+                                ),
+                              ],
                             ),
 
                             child:
@@ -783,14 +820,8 @@ class _RoomControlScreenState
                                       decoration:
                                           BoxDecoration(
                                         color: isOn
-                                            ? SmartHomeColors.gold.withOpacity(
-                                                .14,
-                                              )
-                                            : Colors
-                                                .white
-                                                .withOpacity(
-                                                .05,
-                                              ),
+                                            ? SmartHomeColors.gold.withOpacity(.18)
+                                            : Colors.white.withOpacity(.07),
 
                                         borderRadius:
                                             BorderRadius
@@ -827,7 +858,16 @@ class _RoomControlScreenState
                                                   ),
 
                                       activeThumbColor:
-                                          SmartHomeColors.gold,
+                                          SmartHomeColors.goldLight,
+
+                                      activeTrackColor:
+                                          SmartHomeColors.goldDark,
+
+                                      inactiveThumbColor:
+                                          SmartHomeColors.textMuted,
+
+                                      inactiveTrackColor:
+                                          Colors.white.withOpacity(.10),
                                     ),
                                   ],
                                 ),
@@ -996,8 +1036,7 @@ class _RoomControlScreenState
     required VoidCallback onTap,
   }) {
     return Material(
-      color:
-          SmartHomeColors.surface,
+      color: Colors.black.withOpacity(.34),
 
       borderRadius:
           BorderRadius.circular(
@@ -1012,11 +1051,18 @@ class _RoomControlScreenState
           18,
         ),
 
-        child: Padding(
-          padding:
-              const EdgeInsets.all(
-            17,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(
+              color: Colors.white.withOpacity(.10),
+            ),
           ),
+          child: Padding(
+            padding:
+                const EdgeInsets.all(
+              17,
+            ),
 
           child: Row(
             children: [
@@ -1098,6 +1144,7 @@ class _RoomControlScreenState
                     Colors.white38,
               ),
             ],
+            ),
           ),
         ),
       ),

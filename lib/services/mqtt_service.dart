@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:convert';
@@ -21,6 +22,17 @@ class MqttService {
   String? _deviceUid;
 
   bool _listening = false;
+
+  // =====================================================
+  // DEVICE LIVE STATUS
+  // =====================================================
+
+  Timer? _deviceOfflineTimer;
+
+  // If the ESP32 stops sending state/availability messages,
+  // consider it offline after this period.
+  static const Duration _deviceOfflineTimeout =
+      Duration(seconds: 45);
 
   void Function(Map<String, dynamic> state)? _stateListener;
 
@@ -297,6 +309,19 @@ class MqttService {
       MqttQos.atMostOnce,
     );
 
+    // Subscribe to the ESP32 availability/LWT topic too.
+    final availability = availabilityTopic;
+
+    if (availability != null) {
+      print('MQTT subscribing to availability:');
+      print(availability);
+
+      client.subscribe(
+        availability,
+        MqttQos.atMostOnce,
+      );
+    }
+
     // Only attach one listener to the MQTT update stream.
     if (!_listening) {
       _listening = true;
@@ -333,6 +358,30 @@ class MqttService {
       print('Payload: $payload');
       print('========================================');
 
+      // =====================================================
+      // ESP32 AVAILABILITY
+      // =====================================================
+
+      if (receivedTopic == availabilityTopic) {
+        final availability = payload.trim().toLowerCase();
+
+        if (availability == 'online' ||
+            availability == '1' ||
+            availability == 'true') {
+          _markDeviceAlive();
+        } else if (availability == 'offline' ||
+            availability == '0' ||
+            availability == 'false') {
+          _markDeviceOffline();
+        }
+
+        continue;
+      }
+
+      // =====================================================
+      // ESP32 STATE
+      // =====================================================
+
       if (receivedTopic != stateTopic) {
         continue;
       }
@@ -344,6 +393,9 @@ class MqttService {
           final state =
               Map<String, dynamic>.from(decoded);
 
+          // A valid state message proves the ESP32 is alive.
+          _markDeviceAlive();
+
           _stateListener?.call(state);
         }
       } catch (e) {
@@ -352,6 +404,34 @@ class MqttService {
         );
       }
     }
+  }
+
+  // =====================================================
+  // DEVICE LIVE STATUS
+  // =====================================================
+
+  void _markDeviceAlive() {
+    _deviceOfflineTimer?.cancel();
+
+    // Send a status event to the RoomControlScreen.
+    _stateListener?.call({
+      'device_uid': _deviceUid,
+      '_availability': 'online',
+    });
+
+    _deviceOfflineTimer = Timer(
+      _deviceOfflineTimeout,
+      _markDeviceOffline,
+    );
+  }
+
+  void _markDeviceOffline() {
+    _deviceOfflineTimer?.cancel();
+
+    _stateListener?.call({
+      'device_uid': _deviceUid,
+      '_availability': 'offline',
+    });
   }
 
   // =====================================================
@@ -423,6 +503,16 @@ class MqttService {
   // =====================================================
 
   void disconnect() {
+    _deviceOfflineTimer?.cancel();
+    _deviceOfflineTimer = null;
+
+    // Tell the screen immediately that this MQTT session
+    // is no longer connected to the device.
+    _stateListener?.call({
+      'device_uid': _deviceUid,
+      '_availability': 'offline',
+    });
+
     try {
       _client?.disconnect();
     } catch (_) {}

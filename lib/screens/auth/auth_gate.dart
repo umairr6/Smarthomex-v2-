@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../core/colors.dart';
 import '../../services/auth_service.dart';
 import '../home/home_dashboard_screen.dart';
 import 'login_screen.dart';
@@ -88,11 +89,74 @@ class _LoadingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Color(0xFF0F172A),
+    return Scaffold(
+      backgroundColor: SmartHomeColors.background,
+
       body: Center(
-        child: CircularProgressIndicator(
-          color: Color(0xFF34B7F1),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // =================================================
+            // GOLD LOADING ICON
+            // =================================================
+
+            Container(
+              width: 64,
+              height: 64,
+
+              decoration: BoxDecoration(
+                color: SmartHomeColors.gold.withOpacity(.10),
+                shape: BoxShape.circle,
+
+                border: Border.all(
+                  color: SmartHomeColors.gold.withOpacity(.35),
+                  width: 1,
+                ),
+
+                boxShadow: [
+                  BoxShadow(
+                    color: SmartHomeColors.gold.withOpacity(.12),
+                    blurRadius: 25,
+                    spreadRadius: 2,
+                  ),
+                ],
+              ),
+
+              child: const Padding(
+                padding: EdgeInsets.all(18),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: SmartHomeColors.gold,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            // =================================================
+            // BRAND
+            // =================================================
+
+            const Text(
+              'SmartHomeX',
+              style: TextStyle(
+                color: SmartHomeColors.textPrimary,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                letterSpacing: .3,
+              ),
+            ),
+
+            const SizedBox(height: 5),
+
+            const Text(
+              'Initializing smart home...',
+              style: TextStyle(
+                color: SmartHomeColors.textSecondary,
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
       ),
     );
