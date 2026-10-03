@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:media_kit/media_kit.dart';
 
-import 'core/smart_home_background.dart';
 import 'core/smart_home_theme.dart';
 import 'providers/device_provider.dart';
 import 'screens/splash/splash_screen.dart';
@@ -60,20 +59,6 @@ class SmartHomeX extends StatelessWidget {
         // ===============================================
 
         theme: SmartHomeTheme.darkTheme,
-
-        // ===============================================
-        // GLOBAL LIVE BACKGROUND
-        //
-        // This is the important change.
-        // The background now sits behind the Navigator,
-        // so it can remain visible across the whole app.
-        // ===============================================
-
-        builder: (context, child) {
-          return SmartHomeBackground(
-            child: child ?? const SizedBox.shrink(),
-          );
-        },
 
         home: const SplashScreen(),
       ),

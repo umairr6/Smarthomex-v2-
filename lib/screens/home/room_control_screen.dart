@@ -3,6 +3,7 @@ import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
 import '../../core/colors.dart';
+import '../../core/responsive.dart';
 import '../../services/device_service.dart';
 import '../../services/mqtt_service.dart';
 
@@ -41,6 +42,15 @@ class _RoomControlScreenState
   bool _loading = true;
   bool _busy = false;
   bool _online = false;
+
+  double _horizontalPadding(BuildContext context) =>
+      SmartHomeResponsive.horizontalPadding(context);
+
+  double _spacing(BuildContext context) =>
+      SmartHomeResponsive.cardSpacing(context);
+
+  bool _isSmallPhone(BuildContext context) =>
+      SmartHomeResponsive.isSmallPhone(context);
 
   @override
   void initState() {
@@ -331,6 +341,24 @@ class _RoomControlScreenState
     super.dispose();
   }
 
+  int _relayColumns(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+
+    if (width < 360) return 1;
+    if (width < 700) return 2;
+    if (width < 1050) return 3;
+    return 4;
+  }
+
+  double _relayAspectRatio(BuildContext context) {
+    final columns = _relayColumns(context);
+
+    if (columns == 1) return 2.15;
+    if (columns == 2) return 1.45;
+    if (columns == 3) return 1.35;
+    return 1.40;
+  }
+
   // =====================================================
   // BUILD
   // =====================================================
@@ -354,10 +382,10 @@ class _RoomControlScreenState
           children: [
             Text(
               widget.roomName,
-              style: const TextStyle(
+              style:  TextStyle(
                 fontWeight:
                     FontWeight.bold,
-                fontSize: 20,
+                fontSize: _isSmallPhone(context) ? 18 : 20,
               ),
             ),
 
@@ -376,19 +404,17 @@ class _RoomControlScreenState
                   ),
                 ),
 
-                const SizedBox(
-                  width: 6,
-                ),
+                SizedBox(width: _isSmallPhone(context) ? 4 : 6),
 
                 Text(
                   _online
                       ? 'Online'
                       : 'Offline',
                   style:
-                      const TextStyle(
+                       TextStyle(
                     color:
                         Colors.white54,
-                    fontSize: 12,
+                    fontSize: _isSmallPhone(context) ? 11 : 12,
                   ),
                 ),
               ],
@@ -471,8 +497,12 @@ class _RoomControlScreenState
                 physics:
                     const AlwaysScrollableScrollPhysics(),
 
-                padding:
-                    const EdgeInsets.all(20),
+                padding: EdgeInsets.fromLTRB(
+                  _horizontalPadding(context),
+                  _isSmallPhone(context) ? 12 : 20,
+                  _horizontalPadding(context),
+                  _isSmallPhone(context) ? 22 : 30,
+                ),
 
                 children: [
                   // =================================
@@ -480,8 +510,9 @@ class _RoomControlScreenState
                   // =================================
 
                   Container(
-                    padding:
-                        const EdgeInsets.all(20),
+                    padding: EdgeInsets.all(
+                      _isSmallPhone(context) ? 15 : 20,
+                    ),
 
                     decoration:
                         BoxDecoration(
@@ -525,14 +556,14 @@ class _RoomControlScreenState
                           ),
 
                           child:
-                              const Icon(
+                             Icon(
                             Icons
                                 .router_rounded,
 
                             color:
                                 SmartHomeColors.gold,
 
-                            size: 28,
+                            size: _isSmallPhone(context) ? 24 : 28,
                           ),
                         ),
 
@@ -663,9 +694,8 @@ class _RoomControlScreenState
 
                   if (_relays.isEmpty)
                     Container(
-                      padding:
-                          const EdgeInsets.all(
-                        30,
+                      padding: EdgeInsets.all(
+                        _isSmallPhone(context) ? 22 : 30,
                       ),
 
                       decoration:
@@ -708,17 +738,11 @@ class _RoomControlScreenState
                           _relays.length,
 
                       gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-
-                        crossAxisSpacing:
-                            14,
-
-                        mainAxisSpacing:
-                            14,
-
-                        childAspectRatio:
-                            1.55,
+                          SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: _relayColumns(context),
+                        crossAxisSpacing: _spacing(context),
+                        mainAxisSpacing: _spacing(context),
+                        childAspectRatio: _relayAspectRatio(context),
                       ),
 
                       itemBuilder:

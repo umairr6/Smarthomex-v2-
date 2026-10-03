@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
+import '../../core/responsive.dart';
 import '../../services/auth_service.dart';
 import '../../services/device_service.dart';
 import '../../services/home_service.dart';
@@ -49,6 +50,15 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
 
   static const Color primary = Color(0xFFD6B36A);
   static const Color primaryLight = Color(0xFFF2D18B);
+
+  double _horizontalPadding(BuildContext context) =>
+      SmartHomeResponsive.horizontalPadding(context);
+
+  double _spacing(BuildContext context) =>
+      SmartHomeResponsive.cardSpacing(context);
+
+  bool _isSmallPhone(BuildContext context) =>
+      SmartHomeResponsive.isSmallPhone(context);
 
   @override
   void initState() {
@@ -1035,7 +1045,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     final roomCount = homeRooms.length;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 24),
+      margin: EdgeInsets.only(
+        bottom: _spacing(context) * 1.5,
+      ),
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(.48),
         borderRadius: BorderRadius.circular(30),
@@ -1061,11 +1073,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               home,
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(
-                16,
+              padding: EdgeInsets.fromLTRB(
+                _spacing(context),
                 8,
-                16,
-                16,
+                _spacing(context),
+                _spacing(context),
               ),
               child: Column(
                 children: [
@@ -1095,7 +1107,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     Map<String, dynamic> home,
   ) {
     return Container(
-      padding: const EdgeInsets.all(22),
+      padding: EdgeInsets.all(
+        SmartHomeResponsive.isTablet(context) ? 26 : 18,
+      ),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -1291,24 +1305,31 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
       builder: (context, constraints) {
         final width = constraints.maxWidth;
 
-        final columns = width >= 800
-            ? 3
-            : width >= 500
+        final columns = width < 400
+            ? 1
+            : width < 700
                 ? 2
-                : 2;
+                : width < 1000
+                    ? 3
+                    : 4;
+
+        final spacing = _spacing(context);
 
         return GridView.builder(
           shrinkWrap: true,
-          physics:
-              const NeverScrollableScrollPhysics(),
+          physics: const NeverScrollableScrollPhysics(),
           itemCount: rooms.length,
-          gridDelegate:
-              SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: columns,
-            crossAxisSpacing: 10,
-            mainAxisSpacing: 10,
-            childAspectRatio:
-                columns == 2 ? 1.32 : 1.45,
+            crossAxisSpacing: spacing,
+            mainAxisSpacing: spacing,
+            childAspectRatio: columns == 1
+                ? 2.15
+                : columns == 2
+                    ? 1.32
+                    : columns == 3
+                        ? 1.35
+                        : 1.40,
           ),
           itemBuilder: (context, index) {
             return _roomCard(rooms[index]);
@@ -1782,7 +1803,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
 
-        titleSpacing: 20,
+        titleSpacing: _horizontalPadding(context),
 
         title: Row(
           children: [
@@ -1938,12 +1959,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                     child: ListView(
                       physics:
                           const AlwaysScrollableScrollPhysics(),
-                      padding:
-                          const EdgeInsets.fromLTRB(
-                        18,
-                        72,
-                        18,
-                        35,
+                      padding: EdgeInsets.fromLTRB(
+                        _horizontalPadding(context),
+                        _isSmallPhone(context) ? 68 : 72,
+                        _horizontalPadding(context),
+                        _isSmallPhone(context) ? 28 : 35,
                       ),
                       children: [
                         FadeTransition(
