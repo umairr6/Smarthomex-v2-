@@ -7,6 +7,7 @@ import '../../services/auth_service.dart';
 import '../../services/device_service.dart';
 import '../../services/home_service.dart';
 import '../setup/pair_device_screen.dart';
+import '../settings/settings_screen.dart';
 import 'room_control_screen.dart';
 
 class HomeDashboardScreen extends StatefulWidget {
@@ -1837,6 +1838,32 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         ),
 
         actions: [
+          Container(
+            margin: const EdgeInsets.only(right: 5),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(.40),
+              borderRadius:
+                  BorderRadius.circular(13),
+              border: Border.all(
+                color: Colors.white.withOpacity(.10),
+              ),
+            ),
+            child: IconButton(
+              tooltip: 'Settings',
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const SettingsScreen(),
+                  ),
+                );
+              },
+              icon: const Icon(
+                Icons.settings_rounded,
+                size: 20,
+              ),
+            ),
+          ),
+
           Container(
             margin: const EdgeInsets.only(right: 5),
             decoration: BoxDecoration(

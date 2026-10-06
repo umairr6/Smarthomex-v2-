@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/colors.dart';
+import '../../core/responsive.dart';
 import '../../services/device_service.dart';
 
 class PairDeviceScreen extends StatefulWidget {
@@ -13,20 +15,14 @@ class PairDeviceScreen extends StatefulWidget {
   });
 
   @override
-  State<PairDeviceScreen> createState() =>
-      _PairDeviceScreenState();
+  State<PairDeviceScreen> createState() => _PairDeviceScreenState();
 }
 
-class _PairDeviceScreenState
-    extends State<PairDeviceScreen> {
-  final DeviceService _deviceService =
-      DeviceService();
+class _PairDeviceScreenState extends State<PairDeviceScreen> {
+  final DeviceService _deviceService = DeviceService();
 
-  final TextEditingController _ipController =
-      TextEditingController();
-
-  final TextEditingController _nameController =
-      TextEditingController();
+  final TextEditingController _ipController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
 
   bool _checking = false;
   bool _pairing = false;
@@ -50,9 +46,7 @@ class _PairDeviceScreenState
     final ip = _ipController.text.trim();
 
     if (ip.isEmpty) {
-      _showMessage(
-        'Enter the ESP32 IP address.',
-      );
+      _showMessage('Enter the ESP32 IP address.');
       return;
     }
 
@@ -62,28 +56,20 @@ class _PairDeviceScreenState
     });
 
     try {
-      final info =
-          await _deviceService.getDeviceInfo(
-        ip,
-      );
+      final info = await _deviceService.getDeviceInfo(ip);
 
       if (!mounted) return;
 
       setState(() {
         _deviceInfo = info;
-
         _nameController.text =
-            info['name'] as String? ??
-                'SmartHomeX ESP32';
+            info['name'] as String? ?? 'SmartHomeX ESP32';
       });
     } catch (e) {
       if (!mounted) return;
 
       _showMessage(
-        e.toString().replaceFirst(
-              'Exception: ',
-              '',
-            ),
+        e.toString().replaceFirst('Exception: ', ''),
       );
     } finally {
       if (!mounted) return;
@@ -101,15 +87,10 @@ class _PairDeviceScreenState
   Future<void> _pairDevice() async {
     if (_deviceInfo == null) return;
 
-    final deviceUid =
-        _deviceInfo!['device_uid']
-            as String;
+    final deviceUid = _deviceInfo!['device_uid'] as String;
 
     final relayCount =
-        (_deviceInfo!['relay_count']
-                as num?)
-            ?.toInt() ??
-        4;
+        (_deviceInfo!['relay_count'] as num?)?.toInt() ?? 4;
 
     setState(() {
       _pairing = true;
@@ -118,19 +99,15 @@ class _PairDeviceScreenState
     try {
       await _deviceService.pairDevice(
         roomId: widget.roomId,
-        ipAddress:
-            _ipController.text.trim(),
+        ipAddress: _ipController.text.trim(),
         deviceUid: deviceUid,
-        name:
-            _nameController.text.trim(),
+        name: _nameController.text.trim(),
         relayCount: relayCount,
       );
 
       if (!mounted) return;
 
-      _showMessage(
-        'ESP32 paired successfully!',
-      );
+      _showMessage('ESP32 paired successfully!');
 
       await Future.delayed(
         const Duration(milliseconds: 500),
@@ -143,10 +120,7 @@ class _PairDeviceScreenState
       if (!mounted) return;
 
       _showMessage(
-        e.toString().replaceFirst(
-              'Exception: ',
-              '',
-            ),
+        e.toString().replaceFirst('Exception: ', ''),
       );
     } finally {
       if (!mounted) return;
@@ -158,434 +132,179 @@ class _PairDeviceScreenState
   }
 
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(
+    ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(message),
-        behavior:
-            SnackBarBehavior.floating,
+        content: Text(
+          message,
+          style: const TextStyle(
+            color: SmartHomeColors.textPrimary,
+          ),
+        ),
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: SmartHomeColors.surfaceElevated,
+        margin: EdgeInsets.symmetric(
+          horizontal: SmartHomeResponsive.horizontalPadding(context),
+          vertical: 16,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(
+            color: SmartHomeColors.border,
+          ),
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final horizontalPadding =
+        SmartHomeResponsive.horizontalPadding(context);
+    final maxWidth =
+        SmartHomeResponsive.maxContentWidth(context);
+
     return Scaffold(
-      backgroundColor:
-          const Color(0xFF0F172A),
+      backgroundColor: SmartHomeColors.background,
       appBar: AppBar(
-        backgroundColor:
-            const Color(0xFF0F172A),
+        backgroundColor: SmartHomeColors.background,
+        foregroundColor: SmartHomeColors.textPrimary,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        titleSpacing: horizontalPadding,
         title: const Text(
           'Pair Device',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -.2,
           ),
         ),
       ),
-      body: ListView(
-        padding:
-            const EdgeInsets.all(20),
-        children: [
-          // ====================================
-          // ROOM
-          // ====================================
-
-          Container(
-            padding:
-                const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              color:
-                  const Color(0xFF1E293B),
-              borderRadius:
-                  BorderRadius.circular(20),
+      body: SafeArea(
+        top: false,
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: maxWidth,
             ),
-            child: Row(
+            child: ListView(
+              keyboardDismissBehavior:
+                  ScrollViewKeyboardDismissBehavior.onDrag,
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                12,
+                horizontalPadding,
+                32,
+              ),
               children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration:
-                      BoxDecoration(
-                    color:
-                        const Color(
-                      0xFF34B7F1,
-                    ).withOpacity(.12),
-                    borderRadius:
-                        BorderRadius.circular(
-                      14,
-                    ),
-                  ),
-                  child: const Icon(
-                    Icons.meeting_room_rounded,
-                    color:
-                        Color(0xFF34B7F1),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Pairing to room',
-                        style:
-                            TextStyle(
-                          color:
-                              Colors.white54,
-                          fontSize: 12,
-                        ),
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        widget.roomName,
-                        style:
-                            const TextStyle(
-                          color:
-                              Colors.white,
-                          fontSize: 18,
-                          fontWeight:
-                              FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                _buildHeader(),
+                const SizedBox(height: 24),
+                _buildRoomCard(),
+                const SizedBox(height: 26),
+                _sectionLabel('DEVICE CONNECTION'),
+                const SizedBox(height: 10),
+                _buildIpField(),
+                const SizedBox(height: 12),
+                _buildFindButton(),
+                if (_deviceInfo != null) ...[
+                  const SizedBox(height: 28),
+                  _sectionLabel('DEVICE FOUND'),
+                  const SizedBox(height: 10),
+                  _buildDeviceFoundCard(),
+                ],
+                const SizedBox(height: 24),
+                _buildInfoCard(),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
 
-          const SizedBox(height: 25),
-
-          const Text(
-            'ESP32 IP Address',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight:
-                  FontWeight.w600,
-            ),
+  Widget _buildHeader() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Connect your ESP32',
+          style: TextStyle(
+            color: SmartHomeColors.textPrimary,
+            fontSize: SmartHomeResponsive.titleSize(context),
+            fontWeight: FontWeight.w800,
+            letterSpacing: -.7,
           ),
-
-          const SizedBox(height: 8),
-
-          TextField(
-            controller: _ipController,
-            keyboardType:
-                TextInputType.url,
-            decoration:
-                InputDecoration(
-              hintText:
-                  'Example: 10.159.167.161',
-              prefixIcon:
-                  const Icon(
-                Icons.wifi_rounded,
-              ),
-              filled: true,
-              fillColor:
-                  const Color(
-                0xFF1E293B,
-              ),
-              border:
-                  OutlineInputBorder(
-                borderRadius:
-                    BorderRadius.circular(
-                  14,
-                ),
-                borderSide:
-                    BorderSide.none,
-              ),
-            ),
-            onSubmitted: (_) =>
-                _checkDevice(),
+        ),
+        const SizedBox(height: 7),
+        const Text(
+          'Find your SmartHomeX controller on the local network, verify its details, and pair it with this room.',
+          style: TextStyle(
+            color: SmartHomeColors.textSecondary,
+            fontSize: 14,
+            height: 1.5,
           ),
+        ),
+      ],
+    );
+  }
 
-          const SizedBox(height: 15),
-
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton.icon(
-              onPressed: _checking
-                  ? null
-                  : _checkDevice,
-              icon: _checking
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child:
-                          CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(
-                      Icons.search_rounded,
-                    ),
-              label: Text(
-                _checking
-                    ? 'Checking Device...'
-                    : 'Find Device',
-              ),
-              style:
-                  ElevatedButton.styleFrom(
-                backgroundColor:
-                    const Color(
-                  0xFF34B7F1,
-                ),
-                foregroundColor:
-                    Colors.white,
-                shape:
-                    RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(
-                    14,
-                  ),
-                ),
-              ),
-            ),
+  Widget _buildRoomCard() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: SmartHomeColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: SmartHomeColors.border,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.22),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
           ),
-
-          // ====================================
-          // DEVICE FOUND
-          // ====================================
-
-          if (_deviceInfo != null) ...[
-            const SizedBox(height: 25),
-
-            Container(
-              padding:
-                  const EdgeInsets.all(20),
-              decoration:
-                  BoxDecoration(
-                color:
-                    const Color(
-                  0xFF1E293B,
-                ),
-                borderRadius:
-                    BorderRadius.circular(
-                  20,
-                ),
-                border: Border.all(
-                  color:
-                      const Color(
-                    0xFF34B7F1,
-                  ).withOpacity(.35),
-                ),
-              ),
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration:
-                            BoxDecoration(
-                          color:
-                              Colors.green
-                                  .withOpacity(
-                            .12,
-                          ),
-                          shape:
-                              BoxShape.circle,
-                        ),
-                        child:
-                            const Icon(
-                          Icons
-                              .check_circle_rounded,
-                          color:
-                              Colors.green,
-                          size: 30,
-                        ),
-                      ),
-                      const SizedBox(
-                        width: 14,
-                      ),
-                      const Expanded(
-                        child: Text(
-                          'ESP32 Found',
-                          style:
-                              TextStyle(
-                            color:
-                                Colors.white,
-                            fontSize: 19,
-                            fontWeight:
-                                FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(
-                    height: 20,
-                  ),
-
-                  _infoRow(
-                    'Device UID',
-                    _deviceInfo![
-                            'device_uid']
-                        ?.toString() ??
-                        '-',
-                  ),
-
-                  _infoRow(
-                    'IP Address',
-                    _deviceInfo![
-                            'ip_address']
-                        ?.toString() ??
-                        _ipController
-                            .text,
-                  ),
-
-                  _infoRow(
-                    'Relays',
-                    '${_deviceInfo!['relay_count'] ?? 4}',
-                  ),
-
-                  const SizedBox(
-                    height: 18,
-                  ),
-
-                  const Text(
-                    'Device Name',
-                    style:
-                        TextStyle(
-                      color:
-                          Colors.white70,
-                      fontSize: 13,
-                    ),
-                  ),
-
-                  const SizedBox(
-                    height: 7,
-                  ),
-
-                  TextField(
-                    controller:
-                        _nameController,
-                    decoration:
-                        InputDecoration(
-                      filled: true,
-                      fillColor:
-                          const Color(
-                        0xFF0F172A,
-                      ),
-                      prefixIcon:
-                          const Icon(
-                        Icons
-                            .devices_other_rounded,
-                      ),
-                      border:
-                          OutlineInputBorder(
-                        borderRadius:
-                            BorderRadius
-                                .circular(
-                          14,
-                        ),
-                        borderSide:
-                            BorderSide.none,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(
-                    height: 20,
-                  ),
-
-                  SizedBox(
-                    width:
-                        double.infinity,
-                    height: 52,
-                    child:
-                        ElevatedButton.icon(
-                      onPressed:
-                          _pairing
-                              ? null
-                              : _pairDevice,
-                      icon: _pairing
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child:
-                                  CircularProgressIndicator(
-                                strokeWidth:
-                                    2,
-                                color:
-                                    Colors.white,
-                              ),
-                            )
-                          : const Icon(
-                              Icons
-                                  .link_rounded,
-                            ),
-                      label: Text(
-                        _pairing
-                            ? 'Pairing...'
-                            : 'Pair This Device',
-                      ),
-                      style:
-                          ElevatedButton
-                              .styleFrom(
-                        backgroundColor:
-                            Colors.green,
-                        foregroundColor:
-                            Colors.white,
-                        shape:
-                            RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius
-                                  .circular(
-                            14,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-
-          const SizedBox(height: 25),
-
+        ],
+      ),
+      child: Row(
+        children: [
           Container(
-            padding:
-                const EdgeInsets.all(16),
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
-              color:
-                  Colors.white.withOpacity(
-                .04,
-              ),
-              borderRadius:
-                  BorderRadius.circular(
-                16,
+              color: SmartHomeColors.gold.withOpacity(.11),
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(
+                color: SmartHomeColors.gold.withOpacity(.25),
               ),
             ),
-            child: const Row(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+            child: const Icon(
+              Icons.meeting_room_rounded,
+              color: SmartHomeColors.goldLight,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(
-                  Icons.info_outline_rounded,
-                  color:
-                      Colors.white38,
-                  size: 20,
+                const Text(
+                  'PAIRING TO ROOM',
+                  style: TextStyle(
+                    color: SmartHomeColors.textMuted,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1.2,
+                  ),
                 ),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Make sure your phone/computer and ESP32 are connected to the same Wi-Fi network.',
-                    style: TextStyle(
-                      color:
-                          Colors.white54,
-                      fontSize: 12,
-                      height: 1.5,
-                    ),
+                const SizedBox(height: 5),
+                Text(
+                  widget.roomName,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: SmartHomeColors.textPrimary,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ],
@@ -596,27 +315,274 @@ class _PairDeviceScreenState
     );
   }
 
-  Widget _infoRow(
-    String title,
-    String value,
-  ) {
-    return Padding(
-      padding:
-          const EdgeInsets.only(
-        bottom: 10,
+  Widget _sectionLabel(String title) {
+    return Text(
+      title,
+      style: const TextStyle(
+        color: SmartHomeColors.gold,
+        fontSize: 11,
+        fontWeight: FontWeight.w800,
+        letterSpacing: 1.5,
       ),
+    );
+  }
+
+  Widget _buildIpField() {
+    return TextField(
+      controller: _ipController,
+      keyboardType: TextInputType.url,
+      textInputAction: TextInputAction.search,
+      style: const TextStyle(
+        color: SmartHomeColors.textPrimary,
+        fontSize: 15,
+      ),
+      decoration: InputDecoration(
+        hintText: 'Example: 10.159.167.161',
+        hintStyle: const TextStyle(
+          color: SmartHomeColors.textMuted,
+        ),
+        prefixIcon: const Icon(
+          Icons.wifi_rounded,
+          color: SmartHomeColors.gold,
+        ),
+        filled: true,
+        fillColor: SmartHomeColors.surface,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: const BorderSide(
+            color: SmartHomeColors.border,
+          ),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: const BorderSide(
+            color: SmartHomeColors.gold,
+            width: 1.2,
+          ),
+        ),
+      ),
+      onSubmitted: (_) => _checkDevice(),
+    );
+  }
+
+  Widget _buildFindButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 54,
+      child: ElevatedButton.icon(
+        onPressed: _checking ? null : _checkDevice,
+        icon: _checking
+            ? const SizedBox(
+                width: 19,
+                height: 19,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: SmartHomeColors.background,
+                ),
+              )
+            : const Icon(Icons.search_rounded),
+        label: Text(
+          _checking ? 'Checking Device...' : 'Find Device',
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: SmartHomeColors.gold,
+          foregroundColor: SmartHomeColors.background,
+          disabledBackgroundColor:
+              SmartHomeColors.gold.withOpacity(.35),
+          disabledForegroundColor:
+              SmartHomeColors.background.withOpacity(.7),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          textStyle: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeviceFoundCard() {
+    final deviceUid =
+        _deviceInfo!['device_uid']?.toString() ?? '-';
+    final ipAddress =
+        _deviceInfo!['ip_address']?.toString() ??
+            _ipController.text;
+    final relayCount =
+        '${_deviceInfo!['relay_count'] ?? 4}';
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: SmartHomeColors.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: SmartHomeColors.gold.withOpacity(.42),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: SmartHomeColors.gold.withOpacity(.06),
+            blurRadius: 25,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: SmartHomeColors.online.withOpacity(.11),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: SmartHomeColors.online.withOpacity(.22),
+                  ),
+                ),
+                child: const Icon(
+                  Icons.check_circle_rounded,
+                  color: SmartHomeColors.online,
+                  size: 28,
+                ),
+              ),
+              const SizedBox(width: 13),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'ESP32 Found',
+                      style: TextStyle(
+                        color: SmartHomeColors.textPrimary,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    SizedBox(height: 3),
+                    Text(
+                      'Controller is reachable',
+                      style: TextStyle(
+                        color: SmartHomeColors.online,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          _infoRow('Device UID', deviceUid),
+          _infoRow('IP Address', ipAddress),
+          _infoRow('Relays', relayCount),
+          const SizedBox(height: 10),
+          const Text(
+            'DEVICE NAME',
+            style: TextStyle(
+              color: SmartHomeColors.textMuted,
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.2,
+            ),
+          ),
+          const SizedBox(height: 8),
+          TextField(
+            controller: _nameController,
+            textInputAction: TextInputAction.done,
+            style: const TextStyle(
+              color: SmartHomeColors.textPrimary,
+              fontSize: 14,
+            ),
+            decoration: InputDecoration(
+              hintText: 'SmartHomeX ESP32',
+              hintStyle: const TextStyle(
+                color: SmartHomeColors.textMuted,
+              ),
+              filled: true,
+              fillColor: SmartHomeColors.surfaceElevated,
+              prefixIcon: const Icon(
+                Icons.devices_other_rounded,
+                color: SmartHomeColors.gold,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 14,
+                vertical: 15,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(
+                  color: SmartHomeColors.border,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(
+                  color: SmartHomeColors.gold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 18),
+          SizedBox(
+            width: double.infinity,
+            height: 54,
+            child: ElevatedButton.icon(
+              onPressed: _pairing ? null : _pairDevice,
+              icon: _pairing
+                  ? const SizedBox(
+                      width: 19,
+                      height: 19,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: SmartHomeColors.background,
+                      ),
+                    )
+                  : const Icon(Icons.link_rounded),
+              label: Text(
+                _pairing ? 'Pairing...' : 'Pair This Device',
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: SmartHomeColors.gold,
+                foregroundColor: SmartHomeColors.background,
+                disabledBackgroundColor:
+                    SmartHomeColors.gold.withOpacity(.35),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                textStyle: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoRow(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 11),
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
             width: 105,
             child: Text(
               title,
-              style:
-                  const TextStyle(
-                color:
-                    Colors.white54,
+              style: const TextStyle(
+                color: SmartHomeColors.textMuted,
                 fontSize: 12,
               ),
             ),
@@ -624,13 +590,44 @@ class _PairDeviceScreenState
           Expanded(
             child: Text(
               value,
-              style:
-                  const TextStyle(
-                color:
-                    Colors.white,
+              style: const TextStyle(
+                color: SmartHomeColors.textPrimary,
                 fontSize: 13,
-                fontWeight:
-                    FontWeight.w600,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInfoCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: SmartHomeColors.surface.withOpacity(.72),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: SmartHomeColors.border,
+        ),
+      ),
+      child: const Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.info_outline_rounded,
+            color: SmartHomeColors.gold,
+            size: 20,
+          ),
+          SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'Make sure your phone/computer and ESP32 are connected to the same Wi-Fi network.',
+              style: TextStyle(
+                color: SmartHomeColors.textSecondary,
+                fontSize: 12,
+                height: 1.5,
               ),
             ),
           ),

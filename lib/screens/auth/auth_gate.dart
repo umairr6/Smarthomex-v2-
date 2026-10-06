@@ -3,6 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../core/colors.dart';
 import '../../services/auth_service.dart';
+import '../../services/app_lock_service.dart';
+import '../app_lock/app_lock_screen.dart';
 import '../home/home_dashboard_screen.dart';
 import 'login_screen.dart';
 
@@ -15,9 +17,11 @@ class AuthGate extends StatefulWidget {
 
 class _AuthGateState extends State<AuthGate> {
   final AuthService _authService = AuthService();
+  final AppLockService _appLockService = AppLockService();
 
   bool _loadingUserData = true;
   bool _hasSession = false;
+  bool _checkingAppLock = false;
 
   @override
   void initState() {
@@ -42,6 +46,7 @@ class _AuthGateState extends State<AuthGate> {
       setState(() {
         _hasSession = false;
         _loadingUserData = false;
+        _checkingAppLock = false;
       });
 
       return;
@@ -51,6 +56,7 @@ class _AuthGateState extends State<AuthGate> {
       setState(() {
         _loadingUserData = true;
         _hasSession = true;
+        _checkingAppLock = false;
       });
     }
 
@@ -67,12 +73,59 @@ class _AuthGateState extends State<AuthGate> {
     setState(() {
       _hasSession = true;
       _loadingUserData = false;
+      _checkingAppLock = true;
     });
+
+    await _checkAppLock();
+  }
+
+  Future<void> _checkAppLock() async {
+    try {
+      final enabled = await _appLockService.isEnabled();
+
+      if (!mounted) return;
+
+      setState(() {
+        _checkingAppLock = false;
+      });
+
+      if (enabled) {
+        await _openAppLock();
+      }
+    } catch (e) {
+      debugPrint(
+        'App Lock status check error: $e',
+      );
+
+      if (!mounted) return;
+
+      setState(() {
+        _checkingAppLock = false;
+      });
+    }
+  }
+
+  Future<void> _openAppLock() async {
+    if (!mounted) return;
+
+    final unlocked = await Navigator.of(context).push<bool>(
+      MaterialPageRoute(
+        builder: (_) => const AppLockScreen(),
+      ),
+    );
+
+    if (!mounted) return;
+
+    if (unlocked == true) {
+      setState(() {
+        _checkingAppLock = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_loadingUserData) {
+    if (_loadingUserData || _checkingAppLock) {
       return const _LoadingScreen();
     }
 
@@ -91,28 +144,20 @@ class _LoadingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: SmartHomeColors.background,
-
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // =================================================
-            // GOLD LOADING ICON
-            // =================================================
-
             Container(
               width: 64,
               height: 64,
-
               decoration: BoxDecoration(
                 color: SmartHomeColors.gold.withOpacity(.10),
                 shape: BoxShape.circle,
-
                 border: Border.all(
                   color: SmartHomeColors.gold.withOpacity(.35),
                   width: 1,
                 ),
-
                 boxShadow: [
                   BoxShadow(
                     color: SmartHomeColors.gold.withOpacity(.12),
@@ -121,7 +166,6 @@ class _LoadingScreen extends StatelessWidget {
                   ),
                 ],
               ),
-
               child: const Padding(
                 padding: EdgeInsets.all(18),
                 child: CircularProgressIndicator(
@@ -130,13 +174,7 @@ class _LoadingScreen extends StatelessWidget {
                 ),
               ),
             ),
-
             const SizedBox(height: 18),
-
-            // =================================================
-            // BRAND
-            // =================================================
-
             const Text(
               'SmartHomeX',
               style: TextStyle(
@@ -146,9 +184,7 @@ class _LoadingScreen extends StatelessWidget {
                 letterSpacing: .3,
               ),
             ),
-
             const SizedBox(height: 5),
-
             const Text(
               'Initializing smart home...',
               style: TextStyle(

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/colors.dart';
+import '../../core/responsive.dart';
 import '../../services/auth_service.dart';
 import 'signup_screen.dart';
 
@@ -48,13 +50,10 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       _showMessage('Welcome back!');
-      
     } catch (e) {
       if (!mounted) return;
 
-      _showMessage(
-        _cleanError(e.toString()),
-      );
+      _showMessage(_cleanError(e.toString()));
     } finally {
       if (mounted) {
         setState(() {
@@ -77,15 +76,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (!mounted) return;
 
-      _showMessage(
-        'Password reset email sent.',
-      );
+      _showMessage('Password reset email sent.');
     } catch (e) {
       if (!mounted) return;
 
-      _showMessage(
-        _cleanError(e.toString()),
-      );
+      _showMessage(_cleanError(e.toString()));
     }
   }
 
@@ -108,258 +103,408 @@ class _LoginScreenState extends State<LoginScreen> {
       SnackBar(
         content: Text(message),
         behavior: SnackBarBehavior.floating,
+        backgroundColor: SmartHomeColors.surfaceElevated,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: const BorderSide(color: SmartHomeColors.borderGold),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration({
+    required String label,
+    required IconData icon,
+    Widget? suffixIcon,
+  }) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(
+        color: SmartHomeColors.textSecondary,
+      ),
+      floatingLabelStyle: const TextStyle(
+        color: SmartHomeColors.goldLight,
+      ),
+      prefixIcon: Icon(
+        icon,
+        color: SmartHomeColors.gold,
+      ),
+      suffixIcon: suffixIcon,
+      filled: true,
+      fillColor: SmartHomeColors.background,
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 16,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
+        borderSide: const BorderSide(
+          color: SmartHomeColors.border,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
+        borderSide: const BorderSide(
+          color: SmartHomeColors.gold,
+          width: 1.2,
+        ),
+      ),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    const background = Color(0xFF0F172A);
-    const card = Color(0xFF1E293B);
-    const primary = Color(0xFF34B7F1);
+    final horizontalPadding = SmartHomeResponsive.horizontalPadding(context);
+    final maxWidth = SmartHomeResponsive.isLargeScreen(context) ? 480.0 : 460.0;
+    final titleSize = SmartHomeResponsive.titleSize(context);
 
     return Scaffold(
-      backgroundColor: background,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(
-                maxWidth: 430,
+      backgroundColor: SmartHomeColors.background,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: RadialGradient(
+            center: Alignment.topCenter,
+            radius: 1.15,
+            colors: [
+              Color(0xFF17120A),
+              SmartHomeColors.background,
+              Colors.black,
+            ],
+            stops: [0.0, 0.45, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              padding: EdgeInsets.symmetric(
+                horizontal: horizontalPadding,
+                vertical: 28,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 30),
-
-                  // Logo
-                  Container(
-                    width: 85,
-                    height: 85,
-                    decoration: BoxDecoration(
-                      color: primary.withOpacity(.12),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: primary.withOpacity(.35),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: maxWidth,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _buildBrandHeader(context, titleSize),
+                    const SizedBox(height: 34),
+                    _buildLoginCard(context),
+                    const SizedBox(height: 22),
+                    _buildSignupPrompt(context),
+                    const SizedBox(height: 26),
+                    const Text(
+                      'Smart living. Simple control.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: SmartHomeColors.textMuted,
+                        fontSize: 13,
+                        letterSpacing: .2,
                       ),
                     ),
-                    child: const Icon(
-                      Icons.home_rounded,
-                      color: primary,
-                      size: 44,
-                    ),
-                  ),
-
-                  const SizedBox(height: 28),
-
-                  const Text(
-                    'Welcome to',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 18,
-                    ),
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  const Text(
-                    'SmartHomeX',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  const Text(
-                    'Control your smart home,\nanytime, anywhere.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white54,
-                      fontSize: 15,
-                      height: 1.5,
-                    ),
-                  ),
-
-                  const SizedBox(height: 36),
-
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: card,
-                      borderRadius: BorderRadius.circular(24),
-                    ),
-                    child: Column(
-                      children: [
-                        TextField(
-                          controller: _emailController,
-                          keyboardType:
-                              TextInputType.emailAddress,
-                          style: const TextStyle(
-                            color: Colors.white,
-                          ),
-                          decoration: InputDecoration(
-                            labelText: 'Email',
-                            prefixIcon: const Icon(
-                              Icons.email_outlined,
-                            ),
-                            filled: true,
-                            fillColor:
-                                background.withOpacity(.65),
-                            border: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.circular(14),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        TextField(
-                          controller: _passwordController,
-                          obscureText: _obscurePassword,
-                          style: const TextStyle(
-                            color: Colors.white,
-                          ),
-                          decoration: InputDecoration(
-                            labelText: 'Password',
-                            prefixIcon: const Icon(
-                              Icons.lock_outline,
-                            ),
-                            suffixIcon: IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  _obscurePassword =
-                                      !_obscurePassword;
-                                });
-                              },
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_outlined
-                                    : Icons
-                                        .visibility_off_outlined,
-                              ),
-                            ),
-                            filled: true,
-                            fillColor:
-                                background.withOpacity(.65),
-                            border: OutlineInputBorder(
-                              borderRadius:
-                                  BorderRadius.circular(14),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: _loading
-                                ? null
-                                : _forgotPassword,
-                            child: const Text(
-                              'Forgot Password?',
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        SizedBox(
-                          width: double.infinity,
-                          height: 54,
-                          child: ElevatedButton(
-                            onPressed:
-                                _loading ? null : _login,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primary,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.circular(15),
-                              ),
-                            ),
-                            child: _loading
-                                ? const SizedBox(
-                                    height: 22,
-                                    width: 22,
-                                    child:
-                                        CircularProgressIndicator(
-                                      strokeWidth: 2.5,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : const Text(
-                                    'LOGIN',
-                                    style: TextStyle(
-                                      fontWeight:
-                                          FontWeight.bold,
-                                      letterSpacing: 1,
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  Row(
-                    mainAxisAlignment:
-                        MainAxisAlignment.center,
-                    children: [
-                      const Text(
-                        "Don't have an account? ",
-                        style: TextStyle(
-                          color: Colors.white60,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: _loading
-                            ? null
-                            : () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) =>
-                                        const SignupScreen(),
-                                  ),
-                                );
-                              },
-                        child: const Text(
-                          'Create Account',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 30),
-
-                  const Text(
-                    'Smart living. Simple control.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white30,
-                      fontSize: 13,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildBrandHeader(BuildContext context, double titleSize) {
+    final logoSize = SmartHomeResponsive.isSmallPhone(context) ? 72.0 : 84.0;
+    final iconSize = SmartHomeResponsive.isSmallPhone(context) ? 36.0 : 42.0;
+
+    return Column(
+      children: [
+        Container(
+          width: logoSize,
+          height: logoSize,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: SmartHomeColors.gold.withOpacity(.08),
+            border: Border.all(
+              color: SmartHomeColors.gold.withOpacity(.55),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: SmartHomeColors.gold.withOpacity(.16),
+                blurRadius: 28,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Icon(
+            Icons.home_rounded,
+            color: SmartHomeColors.goldLight,
+            size: iconSize,
+          ),
+        ),
+        const SizedBox(height: 24),
+        const Text(
+          'WELCOME TO',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: SmartHomeColors.textSecondary,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 3,
+          ),
+        ),
+        const SizedBox(height: 6),
+        ShaderMask(
+          shaderCallback: (bounds) {
+            return const LinearGradient(
+              colors: [
+                SmartHomeColors.goldLight,
+                SmartHomeColors.gold,
+                SmartHomeColors.goldDark,
+              ],
+            ).createShader(bounds);
+          },
+          child: Text(
+            'SmartHomeX',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: titleSize + 5,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -.5,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Control your smart home,\nanytime, anywhere.',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: SmartHomeColors.textMuted,
+            fontSize: 14,
+            height: 1.55,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLoginCard(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(
+        SmartHomeResponsive.isSmallPhone(context) ? 16 : 20,
+      ),
+      decoration: BoxDecoration(
+        color: SmartHomeColors.surface.withOpacity(.94),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: SmartHomeColors.border,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.38),
+            blurRadius: 30,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Text(
+            'Sign in',
+            style: TextStyle(
+              color: SmartHomeColors.textPrimary,
+              fontSize: 21,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 5),
+          const Text(
+            'Enter your credentials to continue.',
+            style: TextStyle(
+              color: SmartHomeColors.textMuted,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 20),
+          TextField(
+            controller: _emailController,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            enabled: !_loading,
+            style: const TextStyle(
+              color: SmartHomeColors.textPrimary,
+            ),
+            decoration: _inputDecoration(
+              label: 'Email',
+              icon: Icons.email_outlined,
+            ),
+          ),
+          const SizedBox(height: 14),
+          TextField(
+            controller: _passwordController,
+            obscureText: _obscurePassword,
+            textInputAction: TextInputAction.done,
+            enabled: !_loading,
+            onSubmitted: (_) {
+              if (!_loading) {
+                _login();
+              }
+            },
+            style: const TextStyle(
+              color: SmartHomeColors.textPrimary,
+            ),
+            decoration: _inputDecoration(
+              label: 'Password',
+              icon: Icons.lock_outline_rounded,
+              suffixIcon: IconButton(
+                tooltip: _obscurePassword ? 'Show password' : 'Hide password',
+                onPressed: _loading
+                    ? null
+                    : () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                icon: Icon(
+                  _obscurePassword
+                      ? Icons.visibility_outlined
+                      : Icons.visibility_off_outlined,
+                  color: SmartHomeColors.textSecondary,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: _loading ? null : _forgotPassword,
+              style: TextButton.styleFrom(
+                foregroundColor: SmartHomeColors.goldLight,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 4,
+                  vertical: 8,
+                ),
+              ),
+              child: const Text(
+                'Forgot Password?',
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          SizedBox(
+            height: 54,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                gradient: const LinearGradient(
+                  colors: [
+                    SmartHomeColors.goldLight,
+                    SmartHomeColors.gold,
+                    SmartHomeColors.goldDark,
+                  ],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: SmartHomeColors.gold.withOpacity(.18),
+                    blurRadius: 18,
+                    offset: const Offset(0, 7),
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: _loading ? null : _login,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  foregroundColor: Colors.black,
+                  disabledBackgroundColor: Colors.transparent,
+                  disabledForegroundColor: Colors.black54,
+                  shadowColor: Colors.transparent,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+                child: _loading
+                    ? const SizedBox(
+                        height: 22,
+                        width: 22,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.4,
+                          color: Colors.black87,
+                        ),
+                      )
+                    : const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'LOGIN',
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1.4,
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 19,
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSignupPrompt(BuildContext context) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        const Text(
+          "Don't have an account? ",
+          style: TextStyle(
+            color: SmartHomeColors.textMuted,
+            fontSize: 13,
+          ),
+        ),
+        TextButton(
+          onPressed: _loading
+              ? null
+              : () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => const SignupScreen(),
+                    ),
+                  );
+                },
+          style: TextButton.styleFrom(
+            foregroundColor: SmartHomeColors.goldLight,
+            padding: const EdgeInsets.symmetric(
+              horizontal: 4,
+              vertical: 8,
+            ),
+          ),
+          child: const Text(
+            'Create Account',
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
