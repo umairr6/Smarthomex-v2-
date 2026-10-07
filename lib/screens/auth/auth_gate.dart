@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -23,22 +25,44 @@ class _AuthGateState extends State<AuthGate> {
   bool _hasSession = false;
   bool _checkingAppLock = false;
 
+  bool _appLockCheckedForSession = false;
+  bool _appLockScreenOpen = false;
+
+  late final StreamSubscription<AuthState> _authSubscription;
+
   @override
   void initState() {
     super.initState();
 
-    _checkSession();
-
-    Supabase.instance.client.auth.onAuthStateChange.listen(
+    _authSubscription =
+        Supabase.instance.client.auth.onAuthStateChange.listen(
       (data) {
-        _checkSession();
+        _handleAuthStateChange(data);
       },
     );
+
+    _checkSession();
+  }
+
+  void _handleAuthStateChange(AuthState data) {
+    if (data.session == null) {
+      _appLockCheckedForSession = false;
+      _appLockScreenOpen = false;
+      _checkSession();
+      return;
+    }
+
+    // Prevent duplicate Supabase startup events from opening
+    // the App Lock screen a second time.
+    if (_hasSession && (_loadingUserData || _checkingAppLock)) {
+      return;
+    }
+
+    _checkSession();
   }
 
   Future<void> _checkSession() async {
-    final session =
-        Supabase.instance.client.auth.currentSession;
+    final session = Supabase.instance.client.auth.currentSession;
 
     if (session == null) {
       if (!mounted) return;
@@ -52,75 +76,109 @@ class _AuthGateState extends State<AuthGate> {
       return;
     }
 
+    if (_appLockCheckedForSession) {
+      if (!mounted) return;
+
+      setState(() {
+        _hasSession = true;
+        _loadingUserData = false;
+        _checkingAppLock = false;
+      });
+
+      return;
+    }
+
     if (mounted) {
       setState(() {
         _loadingUserData = true;
         _hasSession = true;
-        _checkingAppLock = false;
+        _checkingAppLock = true;
       });
     }
 
     try {
       await _authService.ensureCurrentUserData();
     } catch (e) {
-      debugPrint(
-        'User data setup error: $e',
-      );
+      debugPrint('User data setup error: $e');
     }
 
     if (!mounted) return;
 
-    setState(() {
-      _hasSession = true;
-      _loadingUserData = false;
-      _checkingAppLock = true;
-    });
+    if (_appLockCheckedForSession) {
+      setState(() {
+        _loadingUserData = false;
+        _checkingAppLock = false;
+      });
+      return;
+    }
 
     await _checkAppLock();
   }
 
   Future<void> _checkAppLock() async {
+    if (_appLockScreenOpen || _appLockCheckedForSession) {
+      return;
+    }
+
     try {
       final enabled = await _appLockService.isEnabled();
 
       if (!mounted) return;
 
-      setState(() {
-        _checkingAppLock = false;
-      });
+      if (!enabled) {
+        _appLockCheckedForSession = true;
 
-      if (enabled) {
-        await _openAppLock();
+        setState(() {
+          _loadingUserData = false;
+          _checkingAppLock = false;
+        });
+
+        return;
+      }
+
+      _appLockScreenOpen = true;
+
+      final unlocked = await Navigator.of(context).push<bool>(
+        MaterialPageRoute(
+          builder: (_) => const AppLockScreen(),
+        ),
+      );
+
+      _appLockScreenOpen = false;
+
+      if (!mounted) return;
+
+      if (unlocked == true) {
+        _appLockCheckedForSession = true;
+
+        setState(() {
+          _loadingUserData = false;
+          _checkingAppLock = false;
+        });
+      } else {
+        setState(() {
+          _loadingUserData = false;
+          _checkingAppLock = false;
+        });
       }
     } catch (e) {
-      debugPrint(
-        'App Lock status check error: $e',
-      );
+      _appLockScreenOpen = false;
+
+      debugPrint('App Lock status check error: $e');
 
       if (!mounted) return;
 
       setState(() {
+        _loadingUserData = false;
         _checkingAppLock = false;
       });
     }
   }
 
-  Future<void> _openAppLock() async {
-    if (!mounted) return;
-
-    final unlocked = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(
-        builder: (_) => const AppLockScreen(),
-      ),
-    );
-
-    if (!mounted) return;
-
-    if (unlocked == true) {
-      setState(() {
-        _checkingAppLock = false;
-      });
-    }
+  @override
+  void dispose() {
+    _authSubscription.cancel();
+    super.dispose();
   }
 
   @override

@@ -21,6 +21,10 @@ dependencies:
   supabase_flutter: ^2.17.2
   mqtt_client: ^10.10.0
 
+  # Reliable Android schedule execution
+  android_alarm_manager_plus: ^4.0.8
+  permission_handler: ^11.4.0
+
   # Video playback
   media_kit: ^1.2.6
   media_kit_video: ^2.0.1

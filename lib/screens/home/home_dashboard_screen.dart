@@ -14,8 +14,7 @@ class HomeDashboardScreen extends StatefulWidget {
   const HomeDashboardScreen({super.key});
 
   @override
-  State<HomeDashboardScreen> createState() =>
-      _HomeDashboardScreenState();
+  State<HomeDashboardScreen> createState() => _HomeDashboardScreenState();
 }
 
 class _HomeDashboardScreenState extends State<HomeDashboardScreen>
@@ -72,8 +71,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
 
     // Start the cinematic background.
     _backgroundPlayer = Player();
-    _backgroundVideoController =
-        VideoController(_backgroundPlayer);
+    _backgroundVideoController = VideoController(_backgroundPlayer);
 
     _startBackgroundVideo();
 
@@ -87,17 +85,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   Future<void> _startBackgroundVideo() async {
     try {
       await _backgroundPlayer.open(
-        Media(
-          'asset:///assets/videos/smarthomex_intro.mp4',
-        ),
+        Media('asset:///assets/videos/smarthomex_intro.mp4'),
       );
 
       await _backgroundPlayer.setVolume(0);
-
     } catch (e) {
-      debugPrint(
-        'SmartHomeX background video error: $e',
-      );
+      debugPrint('SmartHomeX background video error: $e');
     }
   }
 
@@ -128,16 +121,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
       for (final home in homes) {
         final homeId = home['id'] as String;
 
-        final homeRooms =
-            await _homeService.getRooms(homeId);
+        final homeRooms = await _homeService.getRooms(homeId);
 
         rooms[homeId] = homeRooms;
 
         for (final room in homeRooms) {
           final roomId = room['id'] as String;
 
-          final roomDevices =
-              await _deviceService.getRoomDevices(roomId);
+          final roomDevices = await _deviceService.getRoomDevices(roomId);
 
           devices[roomId] = roomDevices;
         }
@@ -295,10 +286,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     if (name == null || name.trim().isEmpty) return;
 
     try {
-      await _homeService.createRoom(
-        homeId: homeId,
-        name: name,
-      );
+      await _homeService.createRoom(homeId: homeId, name: name);
 
       await _loadHomes();
 
@@ -326,9 +314,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   // RENAME HOME
   // =========================================================
 
-  Future<void> _renameHome(
-    Map<String, dynamic> home,
-  ) async {
+  Future<void> _renameHome(Map<String, dynamic> home) async {
     final controller = TextEditingController(
       text: home['name'] as String? ?? '',
     );
@@ -373,10 +359,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     if (name == null || name.trim().isEmpty) return;
 
     try {
-      await _homeService.renameHome(
-        home['id'] as String,
-        name,
-      );
+      await _homeService.renameHome(home['id'] as String, name);
 
       await _loadHomes();
     } catch (e) {
@@ -395,9 +378,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   // RENAME ROOM
   // =========================================================
 
-  Future<void> _renameRoom(
-    Map<String, dynamic> room,
-  ) async {
+  Future<void> _renameRoom(Map<String, dynamic> room) async {
     final controller = TextEditingController(
       text: room['name'] as String? ?? '',
     );
@@ -442,10 +423,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     if (name == null || name.trim().isEmpty) return;
 
     try {
-      await _homeService.renameRoom(
-        roomId: room['id'] as String,
-        name: name,
-      );
+      await _homeService.renameRoom(roomId: room['id'] as String, name: name);
 
       await _loadHomes();
     } catch (e) {
@@ -464,16 +442,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   // DELETE HOME
   // =========================================================
 
-  Future<void> _deleteHome(
-    Map<String, dynamic> home,
-  ) async {
-    final homeName =
-        home['name'] as String? ?? 'this home';
+  Future<void> _deleteHome(Map<String, dynamic> home) async {
+    final homeName = home['name'] as String? ?? 'this home';
 
     final confirmed = await _confirmDialog(
       title: 'Delete Home?',
-      message:
-          'Delete "$homeName" and all rooms inside it?',
+      message: 'Delete "$homeName" and all rooms inside it?',
       icon: Icons.delete_outline_rounded,
       destructive: true,
       confirmText: 'Delete',
@@ -482,9 +456,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     if (confirmed != true) return;
 
     try {
-      await _homeService.deleteHome(
-        home['id'] as String,
-      );
+      await _homeService.deleteHome(home['id'] as String);
 
       await _loadHomes();
 
@@ -512,11 +484,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   // DELETE ROOM
   // =========================================================
 
-  Future<void> _deleteRoom(
-    Map<String, dynamic> room,
-  ) async {
-    final roomName =
-        room['name'] as String? ?? 'this room';
+  Future<void> _deleteRoom(Map<String, dynamic> room) async {
+    final roomName = room['name'] as String? ?? 'this room';
 
     final confirmed = await _confirmDialog(
       title: 'Delete Room?',
@@ -530,9 +499,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     if (confirmed != true) return;
 
     try {
-      await _homeService.deleteRoom(
-        room['id'] as String,
-      );
+      await _homeService.deleteRoom(room['id'] as String);
 
       await _loadHomes();
 
@@ -560,17 +527,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   // UNPAIR DEVICE
   // =========================================================
 
-  Future<void> _unpairDevice(
-    Map<String, dynamic> device,
-  ) async {
-    final deviceName =
-        device['name'] as String? ??
-            'SmartHomeX ESP32';
+  Future<void> _unpairDevice(Map<String, dynamic> device) async {
+    final deviceName = device['name'] as String? ?? 'SmartHomeX ESP32';
 
     final confirmed = await _confirmDialog(
       title: 'Unpair ESP32?',
-      message:
-          'Remove "$deviceName" from this room?',
+      message: 'Remove "$deviceName" from this room?',
       icon: Icons.link_off_rounded,
       destructive: true,
       confirmText: 'Unpair',
@@ -579,9 +541,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     if (confirmed != true) return;
 
     try {
-      await _deviceService.deleteDevice(
-        device['id'] as String,
-      );
+      await _deviceService.deleteDevice(device['id'] as String);
 
       await _loadHomes();
 
@@ -609,15 +569,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   // PAIR DEVICE
   // =========================================================
 
-  Future<void> _pairDevice(
-    Map<String, dynamic> room,
-  ) async {
+  Future<void> _pairDevice(Map<String, dynamic> room) async {
     final result = await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => PairDeviceScreen(
           roomId: room['id'] as String,
-          roomName:
-              room['name'] as String? ?? 'Room',
+          roomName: room['name'] as String? ?? 'Room',
         ),
       ),
     );
@@ -635,18 +592,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     Map<String, dynamic> room,
     Map<String, dynamic> device,
   ) async {
-    final ipAddress =
-        device['ip_address'] as String? ?? '';
+    final ipAddress = device['ip_address'] as String? ?? '';
 
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => RoomControlScreen(
-          roomName:
-              room['name'] as String? ?? 'Room',
+          roomName: room['name'] as String? ?? 'Room',
           deviceId: device['id'] as String,
-          deviceName:
-              device['name'] as String? ??
-                  'SmartHomeX ESP32',
+          deviceName: device['name'] as String? ?? 'SmartHomeX ESP32',
           ipAddress: ipAddress,
         ),
       ),
@@ -657,34 +610,24 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   // HOME MENU
   // =========================================================
 
-  void _showHomeMenu(
-    Map<String, dynamic> home,
-  ) {
+  void _showHomeMenu(Map<String, dynamic> home) {
     showModalBottomSheet(
       context: context,
       backgroundColor: surface2,
       showDragHandle: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(30),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
       builder: (sheetContext) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              18,
-              4,
-              18,
-              24,
-            ),
+            padding: const EdgeInsets.fromLTRB(18, 4, 18, 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 _bottomSheetTitle(
                   Icons.home_rounded,
-                  home['name'] as String? ??
-                      'Home',
+                  home['name'] as String? ?? 'Home',
                 ),
                 const SizedBox(height: 8),
                 _sheetTile(
@@ -716,37 +659,26 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   // ROOM MENU
   // =========================================================
 
-  void _showRoomMenu(
-    Map<String, dynamic> room,
-  ) {
-    final roomDevices =
-        _devices[room['id'] as String] ?? [];
+  void _showRoomMenu(Map<String, dynamic> room) {
+    final roomDevices = _devices[room['id'] as String] ?? [];
 
     showModalBottomSheet(
       context: context,
       backgroundColor: surface2,
       showDragHandle: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(30),
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
       ),
       builder: (sheetContext) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(
-              18,
-              4,
-              18,
-              24,
-            ),
+            padding: const EdgeInsets.fromLTRB(18, 4, 18, 24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 _bottomSheetTitle(
                   Icons.meeting_room_rounded,
-                  room['name'] as String? ??
-                      'Room',
+                  room['name'] as String? ?? 'Room',
                 ),
                 const SizedBox(height: 8),
                 _sheetTile(
@@ -763,10 +695,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                     title: 'Device Information',
                     onTap: () {
                       Navigator.pop(sheetContext);
-                      _showDeviceInfo(
-                        roomDevices.first,
-                        room,
-                      );
+                      _showDeviceInfo(roomDevices.first, room);
                     },
                   ),
                 if (roomDevices.isNotEmpty)
@@ -776,9 +705,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                     color: Colors.orangeAccent,
                     onTap: () {
                       Navigator.pop(sheetContext);
-                      _unpairDevice(
-                        roomDevices.first,
-                      );
+                      _unpairDevice(roomDevices.first);
                     },
                   ),
                 _sheetTile(
@@ -802,24 +729,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   // DEVICE INFORMATION
   // =========================================================
 
-  void _showDeviceInfo(
-    Map<String, dynamic> device,
-    Map<String, dynamic> room,
-  ) {
-    final name =
-        device['name'] as String? ??
-            'SmartHomeX ESP32';
+  void _showDeviceInfo(Map<String, dynamic> device, Map<String, dynamic> room) {
+    final name = device['name'] as String? ?? 'SmartHomeX ESP32';
 
-    final uid =
-        device['device_uid'] as String? ??
-            'Unknown';
+    final uid = device['device_uid'] as String? ?? 'Unknown';
 
-    final ip =
-        device['ip_address'] as String? ??
-            'Unknown';
+    final ip = device['ip_address'] as String? ?? 'Unknown';
 
-    final relayCount =
-        device['relay_count'] as int? ?? 4;
+    final relayCount = device['relay_count'] as int? ?? 4;
 
     showDialog(
       context: context,
@@ -830,10 +747,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _infoRow(
-                'Room',
-                room['name'] as String? ?? 'Room',
-              ),
+              _infoRow('Room', room['name'] as String? ?? 'Room'),
               _infoRow('Device UID', uid),
               _infoRow('IP Address', ip),
               _infoRow('Relays', '$relayCount'),
@@ -841,8 +755,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           ),
           actions: [
             TextButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('Close'),
             ),
           ],
@@ -864,9 +777,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     return AlertDialog(
       backgroundColor: surface2,
       surfaceTintColor: Colors.transparent,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(28),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
       title: Row(
         children: [
           Container(
@@ -876,19 +787,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               color: primary.withOpacity(.12),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(
-              icon,
-              color: primary,
-            ),
+            child: Icon(icon, color: primary),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -913,25 +818,19 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           icon: icon,
           child: Text(
             message,
-            style: const TextStyle(
-              color: Colors.white60,
-              height: 1.5,
-            ),
+            style: const TextStyle(color: Colors.white60, height: 1.5),
           ),
           actions: [
             TextButton(
-              onPressed: () =>
-                  Navigator.pop(dialogContext, false),
+              onPressed: () => Navigator.pop(dialogContext, false),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    destructive ? Colors.redAccent : primary,
+                backgroundColor: destructive ? Colors.redAccent : primary,
                 foregroundColor: Colors.black,
               ),
-              onPressed: () =>
-                  Navigator.pop(dialogContext, true),
+              onPressed: () => Navigator.pop(dialogContext, true),
               child: Text(confirmText),
             ),
           ],
@@ -944,10 +843,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   // BOTTOM SHEET HELPERS
   // =========================================================
 
-  Widget _bottomSheetTitle(
-    IconData icon,
-    String title,
-  ) {
+  Widget _bottomSheetTitle(IconData icon, String title) {
     return Row(
       children: [
         Container(
@@ -957,19 +853,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             color: primary.withOpacity(.10),
             borderRadius: BorderRadius.circular(15),
           ),
-          child: Icon(
-            icon,
-            color: primary,
-          ),
+          child: Icon(icon, color: primary),
         ),
         const SizedBox(width: 13),
         Expanded(
           child: Text(
             title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
       ],
@@ -985,8 +875,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     final iconColor = color ?? primary;
 
     return ListTile(
-      contentPadding:
-          const EdgeInsets.symmetric(vertical: 3),
+      contentPadding: const EdgeInsets.symmetric(vertical: 3),
       leading: Container(
         width: 42,
         height: 42,
@@ -994,11 +883,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           color: iconColor.withOpacity(.10),
           borderRadius: BorderRadius.circular(13),
         ),
-        child: Icon(
-          icon,
-          color: iconColor,
-          size: 20,
-        ),
+        child: Icon(icon, color: iconColor, size: 20),
       ),
       title: Text(
         title,
@@ -1007,10 +892,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           fontWeight: FontWeight.w600,
         ),
       ),
-      trailing: const Icon(
-        Icons.chevron_right_rounded,
-        color: Colors.white24,
-      ),
+      trailing: const Icon(Icons.chevron_right_rounded, color: Colors.white24),
       onTap: onTap,
     );
   }
@@ -1019,22 +901,17 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   // HOME CARD
   // =========================================================
 
-  Widget _homeCard(
-    Map<String, dynamic> home,
-  ) {
+  Widget _homeCard(Map<String, dynamic> home) {
     final homeId = home['id'] as String;
 
-    final homeName =
-        home['name'] as String? ?? 'My Home';
+    final homeName = home['name'] as String? ?? 'My Home';
 
-    final homeRooms =
-        _rooms[homeId] ?? [];
+    final homeRooms = _rooms[homeId] ?? [];
 
     int connectedDevices = 0;
 
     for (final room in homeRooms) {
-      final roomDevices =
-          _devices[room['id'] as String] ?? [];
+      final roomDevices = _devices[room['id'] as String] ?? [];
 
       for (final device in roomDevices) {
         if (device['is_online'] == true) {
@@ -1046,15 +923,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     final roomCount = homeRooms.length;
 
     return Container(
-      margin: EdgeInsets.only(
-        bottom: _spacing(context) * 1.5,
-      ),
+      margin: EdgeInsets.only(bottom: _spacing(context) * 1.5),
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(.48),
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(
-          color: Colors.white.withOpacity(.13),
-        ),
+        border: Border.all(color: Colors.white.withOpacity(.13)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(.35),
@@ -1067,12 +940,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         borderRadius: BorderRadius.circular(30),
         child: Column(
           children: [
-            _homeHero(
-              homeName,
-              roomCount,
-              connectedDevices,
-              home,
-            ),
+            _homeHero(homeName, roomCount, connectedDevices, home),
             Padding(
               padding: EdgeInsets.fromLTRB(
                 _spacing(context),
@@ -1108,9 +976,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     Map<String, dynamic> home,
   ) {
     return Container(
-      padding: EdgeInsets.all(
-        SmartHomeResponsive.isTablet(context) ? 26 : 18,
-      ),
+      padding: EdgeInsets.all(SmartHomeResponsive.isTablet(context) ? 26 : 18),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -1132,14 +998,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                 decoration: BoxDecoration(
                   color: primary.withOpacity(.14),
                   borderRadius: BorderRadius.circular(19),
-                  border: Border.all(
-                    color: primary.withOpacity(.30),
-                  ),
+                  border: Border.all(color: primary.withOpacity(.30)),
                   boxShadow: [
-                    BoxShadow(
-                      color: primary.withOpacity(.12),
-                      blurRadius: 18,
-                    ),
+                    BoxShadow(color: primary.withOpacity(.12), blurRadius: 18),
                   ],
                 ),
                 child: const Icon(
@@ -1151,8 +1012,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               const SizedBox(width: 15),
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       homeName,
@@ -1201,8 +1061,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: IconButton(
-                  onPressed: () =>
-                      _showHomeMenu(home),
+                  onPressed: () => _showHomeMenu(home),
                   icon: const Icon(
                     Icons.more_horiz_rounded,
                     color: Colors.white70,
@@ -1226,9 +1085,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                 child: _statCard(
                   Icons.router_rounded,
                   '$connectedDevices',
-                  connectedDevices == 1
-                      ? 'Device online'
-                      : 'Devices online',
+                  connectedDevices == 1 ? 'Device online' : 'Devices online',
                 ),
               ),
               const SizedBox(width: 10),
@@ -1246,49 +1103,30 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     );
   }
 
-  Widget _statCard(
-    IconData icon,
-    String value,
-    String label,
-  ) {
+  Widget _statCard(IconData icon, String value, String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 13,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 13),
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(.28),
         borderRadius: BorderRadius.circular(17),
-        border: Border.all(
-          color: Colors.white.withOpacity(.08),
-        ),
+        border: Border.all(color: Colors.white.withOpacity(.08)),
       ),
       child: Column(
         children: [
-          Icon(
-            icon,
-            size: 18,
-            color: primaryLight,
-          ),
+          Icon(icon, size: 18, color: primaryLight),
           const SizedBox(height: 7),
           Text(
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 2),
           Text(
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              color: Colors.white38,
-              fontSize: 8.5,
-            ),
+            style: const TextStyle(color: Colors.white38, fontSize: 8.5),
           ),
         ],
       ),
@@ -1299,9 +1137,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   // ROOM GRID
   // =========================================================
 
-  Widget _roomGrid(
-    List<Map<String, dynamic>> rooms,
-  ) {
+  Widget _roomGrid(List<Map<String, dynamic>> rooms) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
@@ -1309,10 +1145,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         final columns = width < 400
             ? 1
             : width < 700
-                ? 2
-                : width < 1000
-                    ? 3
-                    : 4;
+            ? 2
+            : width < 1000
+            ? 3
+            : 4;
 
         final spacing = _spacing(context);
 
@@ -1327,10 +1163,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             childAspectRatio: columns == 1
                 ? 2.15
                 : columns == 2
-                    ? 1.32
-                    : columns == 3
-                        ? 1.35
-                        : 1.40,
+                ? 1.32
+                : columns == 3
+                ? 1.35
+                : 1.40,
           ),
           itemBuilder: (context, index) {
             return _roomCard(rooms[index]);
@@ -1344,39 +1180,27 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   // ROOM CARD
   // =========================================================
 
-  Widget _roomCard(
-    Map<String, dynamic> room,
-  ) {
+  Widget _roomCard(Map<String, dynamic> room) {
     final roomId = room['id'] as String;
 
-    final roomName =
-        room['name'] as String? ?? 'Room';
+    final roomName = room['name'] as String? ?? 'Room';
 
-    final roomDevices =
-        _devices[roomId] ?? [];
+    final roomDevices = _devices[roomId] ?? [];
 
-    final hasDevice =
-        roomDevices.isNotEmpty;
+    final hasDevice = roomDevices.isNotEmpty;
 
-    final device =
-        hasDevice ? roomDevices.first : null;
+    final device = hasDevice ? roomDevices.first : null;
 
-    final isOnline =
-        device?['is_online'] as bool? ?? false;
+    final isOnline = device?['is_online'] as bool? ?? false;
 
-    final deviceName =
-        device?['name'] as String? ??
-            'SmartHomeX ESP32';
+    final deviceName = device?['name'] as String? ?? 'SmartHomeX ESP32';
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(22),
         onTap: hasDevice
-            ? () => _openRoomControl(
-                room,
-                device!,
-              )
+            ? () => _openRoomControl(room, device!)
             : () => _pairDevice(room),
         child: Container(
           padding: const EdgeInsets.all(15),
@@ -1390,8 +1214,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             ),
           ),
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
@@ -1402,27 +1225,22 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                       color: hasDevice
                           ? primary.withOpacity(.13)
                           : Colors.white.withOpacity(.06),
-                      borderRadius:
-                          BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14),
                     ),
                     child: Icon(
                       _roomIcon(roomName),
-                      color: hasDevice
-                          ? primaryLight
-                          : Colors.white38,
+                      color: hasDevice ? primaryLight : Colors.white38,
                       size: 21,
                     ),
                   ),
                   const Spacer(),
                   IconButton(
                     padding: EdgeInsets.zero,
-                    constraints:
-                        const BoxConstraints(
+                    constraints: const BoxConstraints(
                       minWidth: 28,
                       minHeight: 28,
                     ),
-                    onPressed: () =>
-                        _showRoomMenu(room),
+                    onPressed: () => _showRoomMenu(room),
                     icon: const Icon(
                       Icons.more_horiz_rounded,
                       color: Colors.white38,
@@ -1449,9 +1267,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                       width: 7,
                       height: 7,
                       decoration: BoxDecoration(
-                        color: isOnline
-                            ? Colors.greenAccent
-                            : Colors.redAccent,
+                        color: isOnline ? Colors.greenAccent : Colors.redAccent,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -1462,14 +1278,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                             ? '$deviceName • Online'
                             : '$deviceName • Offline',
                         maxLines: 1,
-                        overflow:
-                            TextOverflow.ellipsis,
+                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: isOnline
-                              ? Colors.greenAccent
-                                  .withOpacity(.75)
-                              : Colors.redAccent
-                                  .withOpacity(.75),
+                              ? Colors.greenAccent.withOpacity(.75)
+                              : Colors.redAccent.withOpacity(.75),
                           fontSize: 9.5,
                         ),
                       ),
@@ -1518,21 +1331,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           child: Container(
             decoration: BoxDecoration(
               color: primary.withOpacity(.09),
-              borderRadius:
-                  BorderRadius.circular(17),
-              border: Border.all(
-                color: primary.withOpacity(.25),
-              ),
+              borderRadius: BorderRadius.circular(17),
+              border: Border.all(color: primary.withOpacity(.25)),
             ),
             child: const Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.add_rounded,
-                  color: primaryLight,
-                  size: 19,
-                ),
+                Icon(Icons.add_rounded, color: primaryLight, size: 19),
                 SizedBox(width: 7),
                 Text(
                   'Add Room',
@@ -1557,10 +1362,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   Widget _emptyRooms() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 20,
-        vertical: 28,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
       child: Column(
         children: [
           Container(
@@ -1579,20 +1381,13 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           const SizedBox(height: 13),
           const Text(
             'No rooms yet',
-            style: TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 5),
           const Text(
             'Create your first room and connect your ESP32.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white38,
-              fontSize: 11,
-              height: 1.4,
-            ),
+            style: TextStyle(color: Colors.white38, fontSize: 11, height: 1.4),
           ),
         ],
       ),
@@ -1607,18 +1402,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 22),
-      padding: const EdgeInsets.fromLTRB(
-        25,
-        35,
-        25,
-        32,
-      ),
+      padding: const EdgeInsets.fromLTRB(25, 35, 25, 32),
       decoration: BoxDecoration(
         color: Colors.black.withOpacity(.48),
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(
-          color: Colors.white.withOpacity(.10),
-        ),
+        border: Border.all(color: Colors.white.withOpacity(.10)),
       ),
       child: Column(
         children: [
@@ -1628,9 +1416,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: primary.withOpacity(.12),
-              border: Border.all(
-                color: primary.withOpacity(.22),
-              ),
+              border: Border.all(color: primary.withOpacity(.22)),
             ),
             child: const Icon(
               Icons.home_work_rounded,
@@ -1642,46 +1428,31 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           const Text(
             'Welcome to SmartHomeX',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 21,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
           const Text(
             'Create your first home and start building your smart environment.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white38,
-              fontSize: 12,
-              height: 1.5,
-            ),
+            style: TextStyle(color: Colors.white38, fontSize: 12, height: 1.5),
           ),
           const SizedBox(height: 22),
           SizedBox(
             height: 50,
             child: ElevatedButton.icon(
               onPressed: _addHome,
-              icon: const Icon(
-                Icons.add_home_rounded,
-              ),
+              icon: const Icon(Icons.add_home_rounded),
               label: const Text(
                 'Create Your Home',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w700),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: primary,
                 foregroundColor: Colors.black,
                 elevation: 0,
-                padding:
-                    const EdgeInsets.symmetric(
-                  horizontal: 24,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(17),
+                  borderRadius: BorderRadius.circular(17),
                 ),
               ),
             ),
@@ -1695,26 +1466,17 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   // INFO ROW
   // =========================================================
 
-  Widget _infoRow(
-    String title,
-    String value,
-  ) {
+  Widget _infoRow(String title, String value) {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-        vertical: 9,
-      ),
+      padding: const EdgeInsets.symmetric(vertical: 9),
       child: Row(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
             width: 92,
             child: Text(
               title,
-              style: const TextStyle(
-                color: Colors.white38,
-                fontSize: 11,
-              ),
+              style: const TextStyle(color: Colors.white38, fontSize: 11),
             ),
           ),
           Expanded(
@@ -1782,13 +1544,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   Widget build(BuildContext context) {
     final user = _authService.currentUser;
 
-    final fullName =
-        user?.userMetadata?['full_name'] as String?;
+    final fullName = user?.userMetadata?['full_name'] as String?;
 
-    final displayName =
-        fullName?.trim().isNotEmpty == true
-            ? fullName!.trim()
-            : 'there';
+    final displayName = fullName?.trim().isNotEmpty == true
+        ? fullName!.trim()
+        : 'there';
 
     return Scaffold(
       backgroundColor: Colors.black,
@@ -1797,7 +1557,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
       // =======================================================
       // APP BAR
       // =======================================================
-
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -1813,11 +1572,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               height: 38,
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(.45),
-                borderRadius:
-                    BorderRadius.circular(12),
-                border: Border.all(
-                  color: primary.withOpacity(.35),
-                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: primary.withOpacity(.35)),
               ),
               child: const Icon(
                 Icons.home_rounded,
@@ -1842,25 +1598,17 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             margin: const EdgeInsets.only(right: 5),
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(.40),
-              borderRadius:
-                  BorderRadius.circular(13),
-              border: Border.all(
-                color: Colors.white.withOpacity(.10),
-              ),
+              borderRadius: BorderRadius.circular(13),
+              border: Border.all(color: Colors.white.withOpacity(.10)),
             ),
             child: IconButton(
               tooltip: 'Settings',
               onPressed: () {
                 Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => const SettingsScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
                 );
               },
-              icon: const Icon(
-                Icons.settings_rounded,
-                size: 20,
-              ),
+              icon: const Icon(Icons.settings_rounded, size: 20),
             ),
           ),
 
@@ -1868,53 +1616,38 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             margin: const EdgeInsets.only(right: 5),
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(.40),
-              borderRadius:
-                  BorderRadius.circular(13),
-              border: Border.all(
-                color: Colors.white.withOpacity(.10),
-              ),
+              borderRadius: BorderRadius.circular(13),
+              border: Border.all(color: Colors.white.withOpacity(.10)),
             ),
             child: IconButton(
               tooltip: 'Refresh',
-              onPressed:
-                  _refreshing ? null : _loadHomes,
+              onPressed: _refreshing ? null : _loadHomes,
               icon: _refreshing
                   ? const SizedBox(
                       width: 18,
                       height: 18,
-                      child:
-                          CircularProgressIndicator(
+                      child: CircularProgressIndicator(
                         strokeWidth: 2,
                         color: primaryLight,
                       ),
                     )
-                  : const Icon(
-                      Icons.refresh_rounded,
-                      size: 21,
-                    ),
+                  : const Icon(Icons.refresh_rounded, size: 21),
             ),
           ),
 
           Container(
-            margin:
-                const EdgeInsets.only(right: 12),
+            margin: const EdgeInsets.only(right: 12),
             decoration: BoxDecoration(
               color: Colors.black.withOpacity(.40),
-              borderRadius:
-                  BorderRadius.circular(13),
-              border: Border.all(
-                color: Colors.white.withOpacity(.10),
-              ),
+              borderRadius: BorderRadius.circular(13),
+              border: Border.all(color: Colors.white.withOpacity(.10)),
             ),
             child: IconButton(
               tooltip: 'Sign out',
               onPressed: () async {
                 await _authService.signOut();
               },
-              icon: const Icon(
-                Icons.logout_rounded,
-                size: 20,
-              ),
+              icon: const Icon(Icons.logout_rounded, size: 20),
             ),
           ),
         ],
@@ -1923,15 +1656,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
       // =======================================================
       // BODY
       // =======================================================
-
       body: Stack(
         fit: StackFit.expand,
         children: [
-
           // ---------------------------------------------------
           // FULL SCREEN CINEMATIC VIDEO
           // ---------------------------------------------------
-
           Positioned.fill(
             child: Video(
               controller: _backgroundVideoController,
@@ -1942,7 +1672,6 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           // ---------------------------------------------------
           // DARK CINEMATIC OVERLAY
           // ---------------------------------------------------
-
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -1955,12 +1684,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                     Colors.black.withOpacity(.38),
                     Colors.black.withOpacity(.88),
                   ],
-                  stops: const [
-                    0.0,
-                    0.28,
-                    0.62,
-                    1.0,
-                  ],
+                  stops: const [0.0, 0.28, 0.62, 1.0],
                 ),
               ),
             ),
@@ -1969,23 +1693,18 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           // ---------------------------------------------------
           // CONTENT
           // ---------------------------------------------------
-
           SafeArea(
             bottom: false,
             child: _loading
                 ? const Center(
-                    child:
-                        CircularProgressIndicator(
-                      color: primaryLight,
-                    ),
+                    child: CircularProgressIndicator(color: primaryLight),
                   )
                 : RefreshIndicator(
                     color: primaryLight,
                     backgroundColor: surface2,
                     onRefresh: _loadHomes,
                     child: ListView(
-                      physics:
-                          const AlwaysScrollableScrollPhysics(),
+                      physics: const AlwaysScrollableScrollPhysics(),
                       padding: EdgeInsets.fromLTRB(
                         _horizontalPadding(context),
                         _isSmallPhone(context) ? 68 : 72,
@@ -1994,25 +1713,19 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                       ),
                       children: [
                         FadeTransition(
-                          opacity:
-                              _animationController,
+                          opacity: _animationController,
                           child: SlideTransition(
                             position:
                                 Tween<Offset>(
-                              begin:
-                                  const Offset(0, .12),
-                              end: Offset.zero,
-                            ).animate(
-                              CurvedAnimation(
-                                parent:
-                                    _animationController,
-                                curve: Curves
-                                    .easeOutCubic,
-                              ),
-                            ),
-                            child: _greeting(
-                              displayName,
-                            ),
+                                  begin: const Offset(0, .12),
+                                  end: Offset.zero,
+                                ).animate(
+                                  CurvedAnimation(
+                                    parent: _animationController,
+                                    curve: Curves.easeOutCubic,
+                                  ),
+                                ),
+                            child: _greeting(displayName),
                           ),
                         ),
 
@@ -2021,9 +1734,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                         if (_homes.isEmpty)
                           _emptyHomeState()
                         else
-                          ..._homes.map(
-                            (home) => _homeCard(home),
-                          ),
+                          ..._homes.map((home) => _homeCard(home)),
 
                         _addHomeButton(),
 
@@ -2035,8 +1746,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                             style: TextStyle(
                               color: Colors.white24,
                               fontSize: 11,
-                              fontWeight:
-                                  FontWeight.w700,
+                              fontWeight: FontWeight.w700,
                               letterSpacing: 2,
                             ),
                           ),
@@ -2068,8 +1778,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
 
   Widget _greeting(String name) {
     return Column(
-      crossAxisAlignment:
-          CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           children: [
@@ -2080,19 +1789,14 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                 gradient: const LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    primaryLight,
-                    primary,
-                  ],
+                  colors: [primaryLight, primary],
                 ),
-                borderRadius:
-                    BorderRadius.circular(5),
+                borderRadius: BorderRadius.circular(5),
               ),
             ),
             const SizedBox(width: 12),
             Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
                   'WELCOME BACK',
@@ -2119,10 +1823,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         const SizedBox(height: 13),
         const Text(
           'Control your home from anywhere.',
-          style: TextStyle(
-            color: Colors.white54,
-            fontSize: 12,
-          ),
+          style: TextStyle(color: Colors.white54, fontSize: 12),
         ),
       ],
     );
@@ -2139,27 +1840,18 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius:
-              BorderRadius.circular(19),
+          borderRadius: BorderRadius.circular(19),
           onTap: _addHome,
           child: Container(
             decoration: BoxDecoration(
               color: primary.withOpacity(.12),
-              borderRadius:
-                  BorderRadius.circular(19),
-              border: Border.all(
-                color: primary.withOpacity(.35),
-              ),
+              borderRadius: BorderRadius.circular(19),
+              border: Border.all(color: primary.withOpacity(.35)),
             ),
             child: const Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.add_home_rounded,
-                  color: primaryLight,
-                  size: 20,
-                ),
+                Icon(Icons.add_home_rounded, color: primaryLight, size: 20),
                 SizedBox(width: 9),
                 Text(
                   'Add Another Home',

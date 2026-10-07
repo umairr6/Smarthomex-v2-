@@ -11,8 +11,7 @@ class SmartHomeTheme {
 
       brightness: Brightness.dark,
 
-      scaffoldBackgroundColor:
-          SmartHomeColors.background,
+      scaffoldBackgroundColor: SmartHomeColors.background,
 
       colorScheme: const ColorScheme.dark(
         primary: SmartHomeColors.gold,
@@ -31,7 +30,6 @@ class SmartHomeTheme {
       // ========================================================
       // APP BAR
       // ========================================================
-
       appBarTheme: const AppBarTheme(
         backgroundColor: Colors.transparent,
         foregroundColor: SmartHomeColors.textPrimary,
@@ -43,57 +41,41 @@ class SmartHomeTheme {
       // ========================================================
       // CARD
       // ========================================================
-
       cardTheme: CardThemeData(
         color: SmartHomeColors.surface,
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(
-            color: SmartHomeColors.border,
-            width: 1,
-          ),
+          side: const BorderSide(color: SmartHomeColors.border, width: 1),
         ),
       ),
 
       // ========================================================
       // INPUT FIELDS
       // ========================================================
-
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: SmartHomeColors.surfaceElevated,
 
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(
-            color: SmartHomeColors.border,
-          ),
+          borderSide: const BorderSide(color: SmartHomeColors.border),
         ),
 
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(
-            color: SmartHomeColors.border,
-          ),
+          borderSide: const BorderSide(color: SmartHomeColors.border),
         ),
 
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(
-            color: SmartHomeColors.gold,
-            width: 1.4,
-          ),
+          borderSide: const BorderSide(color: SmartHomeColors.gold, width: 1.4),
         ),
 
-        labelStyle: const TextStyle(
-          color: SmartHomeColors.textMuted,
-        ),
+        labelStyle: const TextStyle(color: SmartHomeColors.textMuted),
 
-        hintStyle: const TextStyle(
-          color: SmartHomeColors.textDisabled,
-        ),
+        hintStyle: const TextStyle(color: SmartHomeColors.textDisabled),
 
         prefixIconColor: SmartHomeColors.gold,
       ),
@@ -101,7 +83,6 @@ class SmartHomeTheme {
       // ========================================================
       // ELEVATED BUTTON
       // ========================================================
-
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: SmartHomeColors.gold,
@@ -109,37 +90,26 @@ class SmartHomeTheme {
 
           elevation: 0,
 
-          padding: const EdgeInsets.symmetric(
-            horizontal: 22,
-            vertical: 15,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 15),
 
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
 
-          textStyle: const TextStyle(
-            fontWeight: FontWeight.w700,
-          ),
+          textStyle: const TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
 
       // ========================================================
       // OUTLINED BUTTON
       // ========================================================
-
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: SmartHomeColors.goldLight,
 
-          side: const BorderSide(
-            color: SmartHomeColors.borderGold,
-          ),
+          side: const BorderSide(color: SmartHomeColors.borderGold),
 
-          padding: const EdgeInsets.symmetric(
-            horizontal: 22,
-            vertical: 15,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 15),
 
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
@@ -150,57 +120,43 @@ class SmartHomeTheme {
       // ========================================================
       // TEXT BUTTON
       // ========================================================
-
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: SmartHomeColors.goldLight,
-        ),
+        style: TextButton.styleFrom(foregroundColor: SmartHomeColors.goldLight),
       ),
 
       // ========================================================
       // SWITCH
       // ========================================================
-
       switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith<Color?>(
-          (states) {
-            if (states.contains(WidgetState.selected)) {
-              return SmartHomeColors.goldLight;
-            }
+        thumbColor: WidgetStateProperty.resolveWith<Color?>((states) {
+          if (states.contains(WidgetState.selected)) {
+            return SmartHomeColors.goldLight;
+          }
 
-            return SmartHomeColors.textMuted;
-          },
-        ),
+          return SmartHomeColors.textMuted;
+        }),
 
-        trackColor: WidgetStateProperty.resolveWith<Color?>(
-          (states) {
-            if (states.contains(WidgetState.selected)) {
-              return SmartHomeColors.goldDark;
-            }
+        trackColor: WidgetStateProperty.resolveWith<Color?>((states) {
+          if (states.contains(WidgetState.selected)) {
+            return SmartHomeColors.goldDark;
+          }
 
-            return SmartHomeColors.surfaceElevated;
-          },
-        ),
+          return SmartHomeColors.surfaceElevated;
+        }),
 
-        trackOutlineColor:
-            WidgetStateProperty.all(
-          SmartHomeColors.border,
-        ),
+        trackOutlineColor: WidgetStateProperty.all(SmartHomeColors.border),
       ),
 
       // ========================================================
       // PROGRESS INDICATOR
       // ========================================================
-
-      progressIndicatorTheme:
-          const ProgressIndicatorThemeData(
+      progressIndicatorTheme: const ProgressIndicatorThemeData(
         color: SmartHomeColors.gold,
       ),
 
       // ========================================================
       // DIVIDER
       // ========================================================
-
       dividerTheme: const DividerThemeData(
         color: SmartHomeColors.border,
         thickness: 1,
@@ -209,23 +165,15 @@ class SmartHomeTheme {
       // ========================================================
       // ICON
       // ========================================================
-
-      iconTheme: const IconThemeData(
-        color: SmartHomeColors.goldLight,
-      ),
+      iconTheme: const IconThemeData(color: SmartHomeColors.goldLight),
 
       // ========================================================
       // SNACKBAR
       // ========================================================
-
       snackBarTheme: SnackBarThemeData(
         backgroundColor: SmartHomeColors.surfaceElevated,
-        contentTextStyle: const TextStyle(
-          color: SmartHomeColors.textPrimary,
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
+        contentTextStyle: const TextStyle(color: SmartHomeColors.textPrimary),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         behavior: SnackBarBehavior.floating,
       ),
     );

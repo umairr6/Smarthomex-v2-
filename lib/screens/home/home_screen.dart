@@ -12,17 +12,13 @@ class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() =>
-      _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState
-    extends State<HomeScreen> {
-  final ApiService _apiService =
-      ApiService();
+class _HomeScreenState extends State<HomeScreen> {
+  final ApiService _apiService = ApiService();
 
-  final StorageService _storageService =
-      StorageService();
+  final StorageService _storageService = StorageService();
 
   bool _isRefreshing = false;
 
@@ -30,66 +26,48 @@ class _HomeScreenState
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance
-        .addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadSavedSettings();
     });
   }
 
   Future<void> _loadSavedSettings() async {
-    final provider =
-        context.read<DeviceProvider>();
+    final provider = context.read<DeviceProvider>();
 
-    final savedRelays =
-        await _storageService.loadRelays();
+    final savedRelays = await _storageService.loadRelays();
 
     if (savedRelays != null && mounted) {
-      provider.loadSavedRelays(
-        savedRelays,
-      );
+      provider.loadSavedRelays(savedRelays);
     }
 
-    final savedTimers =
-        await _storageService.loadTimers();
+    final savedTimers = await _storageService.loadTimers();
 
     if (mounted) {
-      provider.loadSavedTimers(
-        savedTimers,
-      );
+      provider.loadSavedTimers(savedTimers);
     }
 
     await _syncWithEsp32();
   }
 
   Future<void> _syncWithEsp32() async {
-    final provider =
-        context.read<DeviceProvider>();
+    final provider = context.read<DeviceProvider>();
 
     final device = provider.device;
 
     if (device == null) return;
 
-    final status =
-        await _apiService.getStatus(
-      device.ipAddress,
-    );
+    final status = await _apiService.getStatus(device.ipAddress);
 
     if (!mounted) return;
 
     if (status == null) {
-      provider.updateDeviceStatus(
-        false,
-      );
+      provider.updateDeviceStatus(false);
       return;
     }
 
-    provider.updateDeviceStatus(
-      true,
-    );
+    provider.updateDeviceStatus(true);
 
-    provider.syncRelayStates(
-      status,
-    );
+    provider.syncRelayStates(status);
   }
 
   Future<void> _refresh() async {
@@ -108,61 +86,38 @@ class _HomeScreenState
     });
   }
 
-  Future<void> _toggleRelay(
-    int relayId,
-    bool turnOn,
-  ) async {
-    final provider =
-        context.read<DeviceProvider>();
+  Future<void> _toggleRelay(int relayId, bool turnOn) async {
+    final provider = context.read<DeviceProvider>();
 
     final device = provider.device;
 
     if (device == null) return;
 
     if (!provider.isOnline) {
-      _showMessage(
-        'ESP32 is offline.',
-      );
+      _showMessage('ESP32 is offline.');
       return;
     }
 
     bool success;
 
     if (turnOn) {
-      success =
-          await _apiService.turnRelayOn(
-        device.ipAddress,
-        relayId,
-      );
+      success = await _apiService.turnRelayOn(device.ipAddress, relayId);
     } else {
-      success =
-          await _apiService.turnRelayOff(
-        device.ipAddress,
-        relayId,
-      );
+      success = await _apiService.turnRelayOff(device.ipAddress, relayId);
     }
 
     if (!mounted) return;
 
     if (success) {
-      provider.updateRelayState(
-        relayId,
-        turnOn,
-      );
+      provider.updateRelayState(relayId, turnOn);
     } else {
-      provider.updateDeviceStatus(
-        false,
-      );
+      provider.updateDeviceStatus(false);
 
-      _showMessage(
-        'Failed to control the switch.',
-      );
+      _showMessage('Failed to control the switch.');
     }
   }
 
-  IconData _getRelayIcon(
-    String icon,
-  ) {
+  IconData _getRelayIcon(String icon) {
     switch (icon) {
       case 'fan':
         return Icons.air;
@@ -176,123 +131,83 @@ class _HomeScreenState
     }
   }
 
-  void _showMessage(
-    String message,
-  ) {
+  void _showMessage(String message) {
     if (!mounted) return;
 
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        SnackBar(
-          content: Text(message),
-          behavior:
-              SnackBarBehavior.floating,
-        ),
+        SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
       );
   }
 
   void _openTimers() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) =>
-            const TimersScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const TimersScreen()),
     );
   }
 
   void _openSchedules() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) =>
-            const SchedulesScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const SchedulesScreen()),
     );
   }
 
   void _openSettings() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) =>
-            const SettingsScreen(),
-      ),
+      MaterialPageRoute(builder: (_) => const SettingsScreen()),
     );
   }
 
   @override
-  Widget build(
-    BuildContext context,
-  ) {
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           'SmartHomeX',
-          style: TextStyle(
-            fontWeight:
-                FontWeight.bold,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         actions: [
           IconButton(
-            onPressed: _isRefreshing
-                ? null
-                : _refresh,
+            onPressed: _isRefreshing ? null : _refresh,
             tooltip: 'Refresh',
             icon: _isRefreshing
                 ? const SizedBox(
                     width: 20,
                     height: 20,
-                    child:
-                        CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   )
-                : const Icon(
-                    Icons.refresh,
-                  ),
+                : const Icon(Icons.refresh),
           ),
 
           IconButton(
             onPressed: _openTimers,
             tooltip: 'Timers',
-            icon: const Icon(
-              Icons.timer_outlined,
-            ),
+            icon: const Icon(Icons.timer_outlined),
           ),
 
           IconButton(
             onPressed: _openSchedules,
             tooltip: 'Schedules',
-            icon: const Icon(
-              Icons.calendar_month_outlined,
-            ),
+            icon: const Icon(Icons.calendar_month_outlined),
           ),
 
           IconButton(
             onPressed: _openSettings,
             tooltip: 'Settings',
-            icon: const Icon(
-              Icons.settings_outlined,
-            ),
+            icon: const Icon(Icons.settings_outlined),
           ),
 
-          const SizedBox(
-            width: 6,
-          ),
+          const SizedBox(width: 6),
         ],
       ),
 
       body: Consumer<DeviceProvider>(
-        builder: (
-          context,
-          provider,
-          child,
-        ) {
-          final device =
-              provider.device;
+        builder: (context, provider, child) {
+          final device = provider.device;
 
           if (device == null) {
             return _noDeviceState();
@@ -301,51 +216,31 @@ class _HomeScreenState
           return RefreshIndicator(
             onRefresh: _refresh,
             child: ListView(
-              physics:
-                  const AlwaysScrollableScrollPhysics(),
-              padding:
-                  const EdgeInsets.all(16),
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
               children: [
-                _deviceStatusCard(
-                  provider,
-                ),
+                _deviceStatusCard(provider),
 
-                const SizedBox(
-                  height: 22,
-                ),
+                const SizedBox(height: 22),
 
                 const Text(
                   'Switches',
-                  style: TextStyle(
-                    fontSize: 21,
-                    fontWeight:
-                        FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 21, fontWeight: FontWeight.bold),
                 ),
 
-                const SizedBox(
-                  height: 12,
-                ),
+                const SizedBox(height: 12),
 
-                _relayGrid(
-                  provider,
-                ),
+                _relayGrid(provider),
 
-                const SizedBox(
-                  height: 20,
-                ),
+                const SizedBox(height: 20),
 
                 _quickTimerCard(),
 
-                const SizedBox(
-                  height: 12,
-                ),
+                const SizedBox(height: 12),
 
                 _quickScheduleCard(),
 
-                const SizedBox(
-                  height: 100,
-                ),
+                const SizedBox(height: 100),
               ],
             ),
           );
@@ -354,139 +249,88 @@ class _HomeScreenState
     );
   }
 
-  Widget _deviceStatusCard(
-    DeviceProvider provider,
-  ) {
-    final device =
-        provider.device!;
+  Widget _deviceStatusCard(DeviceProvider provider) {
+    final device = provider.device!;
 
     return Container(
-      padding:
-          const EdgeInsets.all(20),
-      decoration:
-          BoxDecoration(
-        color:
-            const Color(0xff1E293B),
-        borderRadius:
-            BorderRadius.circular(24),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xff1E293B),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: provider.isOnline
-              ? Colors.green.withValues(
-                  alpha: 0.25,
-                )
-              : Colors.red.withValues(
-                  alpha: 0.25,
-                ),
+              ? Colors.green.withValues(alpha: 0.25)
+              : Colors.red.withValues(alpha: 0.25),
         ),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
                 width: 52,
                 height: 52,
-                decoration:
-                    BoxDecoration(
-                  color:
-                      const Color(
-                    0xff34B7F1,
-                  ).withValues(
-                    alpha: 0.12,
-                  ),
-                  borderRadius:
-                      BorderRadius.circular(
-                    16,
-                  ),
+                decoration: BoxDecoration(
+                  color: const Color(0xff34B7F1).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: const Icon(
                   Icons.home_outlined,
-                  color:
-                      Color(0xff34B7F1),
+                  color: Color(0xff34B7F1),
                   size: 28,
                 ),
               ),
 
-              const SizedBox(
-                width: 14,
-              ),
+              const SizedBox(width: 14),
 
               Expanded(
                 child: Column(
-                  crossAxisAlignment:
-                      CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       device.name,
-                      style:
-                          const TextStyle(
+                      style: const TextStyle(
                         fontSize: 19,
-                        fontWeight:
-                            FontWeight.bold,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
 
-                    const SizedBox(
-                      height: 4,
-                    ),
+                    const SizedBox(height: 4),
 
                     Text(
                       device.ipAddress,
-                      style:
-                          TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
-                        color: Colors
-                            .white
-                            .withValues(
-                          alpha: 0.55,
-                        ),
+                        color: Colors.white.withValues(alpha: 0.55),
                       ),
                     ),
                   ],
                 ),
               ),
 
-              _statusBadge(
-                provider.isOnline,
-              ),
+              _statusBadge(provider.isOnline),
             ],
           ),
 
-          const SizedBox(
-            height: 18,
-          ),
+          const SizedBox(height: 18),
 
           Row(
             children: [
               Icon(
-                provider.isOnline
-                    ? Icons.wifi
-                    : Icons.wifi_off,
+                provider.isOnline ? Icons.wifi : Icons.wifi_off,
                 size: 17,
-                color:
-                    provider.isOnline
-                        ? Colors.green
-                        : Colors.red,
+                color: provider.isOnline ? Colors.green : Colors.red,
               ),
 
-              const SizedBox(
-                width: 7,
-              ),
+              const SizedBox(width: 7),
 
               Text(
-                provider.isOnline
-                    ? 'ESP32 Connected'
-                    : 'ESP32 Offline',
+                provider.isOnline ? 'ESP32 Connected' : 'ESP32 Offline',
                 style: TextStyle(
                   fontSize: 13,
-                  color:
-                      provider.isOnline
-                          ? Colors.green
-                          : Colors.red,
-                  fontWeight:
-                      FontWeight.w600,
+                  color: provider.isOnline ? Colors.green : Colors.red,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -496,61 +340,35 @@ class _HomeScreenState
     );
   }
 
-  Widget _statusBadge(
-    bool online,
-  ) {
+  Widget _statusBadge(bool online) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(
-        horizontal: 11,
-        vertical: 7,
-      ),
-      decoration:
-          BoxDecoration(
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 7),
+      decoration: BoxDecoration(
         color: online
-            ? Colors.green.withValues(
-                alpha: 0.12,
-              )
-            : Colors.red.withValues(
-                alpha: 0.12,
-              ),
-        borderRadius:
-            BorderRadius.circular(
-          20,
-        ),
+            ? Colors.green.withValues(alpha: 0.12)
+            : Colors.red.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
-        mainAxisSize:
-            MainAxisSize.min,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             width: 7,
             height: 7,
-            decoration:
-                BoxDecoration(
-              color: online
-                  ? Colors.green
-                  : Colors.red,
-              shape:
-                  BoxShape.circle,
+            decoration: BoxDecoration(
+              color: online ? Colors.green : Colors.red,
+              shape: BoxShape.circle,
             ),
           ),
 
-          const SizedBox(
-            width: 6,
-          ),
+          const SizedBox(width: 6),
 
           Text(
-            online
-                ? 'Online'
-                : 'Offline',
+            online ? 'Online' : 'Offline',
             style: TextStyle(
               fontSize: 12,
-              fontWeight:
-                  FontWeight.w600,
-              color: online
-                  ? Colors.green
-                  : Colors.red,
+              fontWeight: FontWeight.w600,
+              color: online ? Colors.green : Colors.red,
             ),
           ),
         ],
@@ -558,26 +376,19 @@ class _HomeScreenState
     );
   }
 
-  Widget _relayGrid(
-    DeviceProvider provider,
-  ) {
+  Widget _relayGrid(DeviceProvider provider) {
     return GridView.builder(
       shrinkWrap: true,
-      physics:
-          const NeverScrollableScrollPhysics(),
-      itemCount:
-          provider.relays.length,
-      gridDelegate:
-          const SliverGridDelegateWithFixedCrossAxisCount(
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: provider.relays.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
         childAspectRatio: 0.95,
       ),
-      itemBuilder:
-          (context, index) {
-        final relay =
-            provider.relays[index];
+      itemBuilder: (context, index) {
+        final relay = provider.relays[index];
 
         return _relayCard(
           provider,
@@ -598,74 +409,36 @@ class _HomeScreenState
     bool isOn,
   ) {
     return AnimatedContainer(
-      duration:
-          const Duration(
-        milliseconds: 250,
-      ),
-      padding:
-          const EdgeInsets.all(17),
-      decoration:
-          BoxDecoration(
+      duration: const Duration(milliseconds: 250),
+      padding: const EdgeInsets.all(17),
+      decoration: BoxDecoration(
         color: isOn
-            ? const Color(
-                0xff34B7F1,
-              ).withValues(
-                alpha: 0.10,
-              )
-            : const Color(
-                0xff1E293B,
-              ),
-        borderRadius:
-            BorderRadius.circular(
-          22,
-        ),
+            ? const Color(0xff34B7F1).withValues(alpha: 0.10)
+            : const Color(0xff1E293B),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: isOn
-              ? const Color(
-                  0xff34B7F1,
-                ).withValues(
-                  alpha: 0.45,
-                )
-              : Colors.white.withValues(
-                  alpha: 0.05,
-                ),
+              ? const Color(0xff34B7F1).withValues(alpha: 0.45)
+              : Colors.white.withValues(alpha: 0.05),
         ),
       ),
       child: Column(
-        crossAxisAlignment:
-            CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
                 width: 46,
                 height: 46,
-                decoration:
-                    BoxDecoration(
+                decoration: BoxDecoration(
                   color: isOn
-                      ? const Color(
-                          0xff34B7F1,
-                        ).withValues(
-                          alpha: 0.15,
-                        )
-                      : Colors.black
-                          .withValues(
-                          alpha: 0.15,
-                        ),
-                  borderRadius:
-                      BorderRadius.circular(
-                    14,
-                  ),
+                      ? const Color(0xff34B7F1).withValues(alpha: 0.15)
+                      : Colors.black.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(
-                  _getRelayIcon(
-                    icon,
-                  ),
-                  color: isOn
-                      ? const Color(
-                          0xff34B7F1,
-                        )
-                      : Colors.white54,
+                  _getRelayIcon(icon),
+                  color: isOn ? const Color(0xff34B7F1) : Colors.white54,
                   size: 25,
                 ),
               ),
@@ -674,15 +447,11 @@ class _HomeScreenState
 
               Switch(
                 value: isOn,
-                onChanged:
-                    provider.isOnline
-                        ? (value) {
-                            _toggleRelay(
-                              relayId,
-                              value,
-                            );
-                          }
-                        : null,
+                onChanged: provider.isOnline
+                    ? (value) {
+                        _toggleRelay(relayId, value);
+                      }
+                    : null,
               ),
             ],
           ),
@@ -692,46 +461,28 @@ class _HomeScreenState
           Text(
             name,
             maxLines: 1,
-            overflow:
-                TextOverflow.ellipsis,
-            style:
-                const TextStyle(
-              fontSize: 17,
-              fontWeight:
-                  FontWeight.bold,
-            ),
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
 
-          const SizedBox(
-            height: 5,
-          ),
+          const SizedBox(height: 5),
 
           Text(
             isOn ? 'ON' : 'OFF',
             style: TextStyle(
               fontSize: 12,
-              fontWeight:
-                  FontWeight.w600,
-              color: isOn
-                  ? const Color(
-                      0xff34B7F1,
-                    )
-                  : Colors.white54,
+              fontWeight: FontWeight.w600,
+              color: isOn ? const Color(0xff34B7F1) : Colors.white54,
             ),
           ),
 
-          const SizedBox(
-            height: 3,
-          ),
+          const SizedBox(height: 3),
 
           Text(
             'Relay $relayId',
             style: TextStyle(
               fontSize: 11,
-              color: Colors.white
-                  .withValues(
-                alpha: 0.40,
-              ),
+              color: Colors.white.withValues(alpha: 0.40),
             ),
           ),
         ],
@@ -743,19 +494,16 @@ class _HomeScreenState
     return _quickFeatureCard(
       icon: Icons.timer_outlined,
       title: 'Timers',
-      subtitle:
-          'Automatically turn switches off',
+      subtitle: 'Automatically turn switches off',
       onTap: _openTimers,
     );
   }
 
   Widget _quickScheduleCard() {
     return _quickFeatureCard(
-      icon:
-          Icons.calendar_month_outlined,
+      icon: Icons.calendar_month_outlined,
       title: 'Schedules',
-      subtitle:
-          'Automate switches by time',
+      subtitle: 'Automate switches by time',
       onTap: _openSchedules,
     );
   }
@@ -768,26 +516,14 @@ class _HomeScreenState
   }) {
     return InkWell(
       onTap: onTap,
-      borderRadius:
-          BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(22),
       child: Container(
-        padding:
-            const EdgeInsets.all(20),
-        decoration:
-            BoxDecoration(
-          color:
-              const Color(0xff1E293B),
-          borderRadius:
-              BorderRadius.circular(
-            22,
-          ),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: const Color(0xff1E293B),
+          borderRadius: BorderRadius.circular(22),
           border: Border.all(
-            color:
-                const Color(
-              0xff34B7F1,
-            ).withValues(
-              alpha: 0.12,
-            ),
+            color: const Color(0xff34B7F1).withValues(alpha: 0.12),
           ),
         ),
         child: Row(
@@ -795,70 +531,38 @@ class _HomeScreenState
             Container(
               width: 52,
               height: 52,
-              decoration:
-                  BoxDecoration(
-                color:
-                    const Color(
-                  0xff34B7F1,
-                ).withValues(
-                  alpha: 0.12,
-                ),
-                borderRadius:
-                    BorderRadius.circular(
-                  16,
-                ),
+              decoration: BoxDecoration(
+                color: const Color(0xff34B7F1).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(16),
               ),
-              child: Icon(
-                icon,
-                color:
-                    const Color(
-                  0xff34B7F1,
-                ),
-                size: 27,
-              ),
+              child: Icon(icon, color: const Color(0xff34B7F1), size: 27),
             ),
 
-            const SizedBox(
-              width: 14,
-            ),
+            const SizedBox(width: 14),
 
             Expanded(
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style:
-                        const TextStyle(
+                    style: const TextStyle(
                       fontSize: 17,
-                      fontWeight:
-                          FontWeight.bold,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
 
-                  const SizedBox(
-                    height: 4,
-                  ),
+                  const SizedBox(height: 4),
 
                   Text(
                     subtitle,
-                    style:
-                        const TextStyle(
-                      fontSize: 12,
-                      color:
-                          Colors.white54,
-                    ),
+                    style: const TextStyle(fontSize: 12, color: Colors.white54),
                   ),
                 ],
               ),
             ),
 
-            const Icon(
-              Icons.chevron_right,
-              color:
-                  Colors.white54,
-            ),
+            const Icon(Icons.chevron_right, color: Colors.white54),
           ],
         ),
       ),
@@ -868,62 +572,40 @@ class _HomeScreenState
   Widget _noDeviceState() {
     return Center(
       child: Padding(
-        padding:
-            const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(32),
         child: Column(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(
               Icons.devices_other_outlined,
               size: 70,
-              color:
-                  Color(0xff34B7F1),
+              color: Color(0xff34B7F1),
             ),
 
-            const SizedBox(
-              height: 20,
-            ),
+            const SizedBox(height: 20),
 
             const Text(
               'No Device Connected',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight:
-                    FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
 
-            const SizedBox(
-              height: 10,
-            ),
+            const SizedBox(height: 10),
 
             Text(
               'Connect an ESP32 device to start controlling your home.',
-              textAlign:
-                  TextAlign.center,
+              textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white
-                    .withValues(
-                  alpha: 0.60,
-                ),
+                color: Colors.white.withValues(alpha: 0.60),
                 height: 1.5,
               ),
             ),
 
-            const SizedBox(
-              height: 24,
-            ),
+            const SizedBox(height: 24),
 
             FilledButton.icon(
-              onPressed:
-                  _openSettings,
-              icon: const Icon(
-                Icons.settings_outlined,
-              ),
-              label: const Text(
-                'Settings',
-              ),
+              onPressed: _openSettings,
+              icon: const Icon(Icons.settings_outlined),
+              label: const Text('Settings'),
             ),
           ],
         ),

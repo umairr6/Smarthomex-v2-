@@ -1,30 +1,22 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/colors.dart';
+import '../../core/responsive.dart';
 import '../../models/schedule_model.dart';
 import '../../providers/device_provider.dart';
-import '../../services/api_service.dart';
 import '../../services/storage_service.dart';
+import '../../services/schedule_manager.dart';
 
 class SchedulesScreen extends StatefulWidget {
   const SchedulesScreen({super.key});
 
   @override
-  State<SchedulesScreen> createState() =>
-      _SchedulesScreenState();
+  State<SchedulesScreen> createState() => _SchedulesScreenState();
 }
 
-class _SchedulesScreenState
-    extends State<SchedulesScreen> {
-  final ApiService _apiService = ApiService();
-  final StorageService _storageService =
-      StorageService();
-
-  Timer? _scheduleTimer;
-
-  String _lastExecutedKey = '';
+class _SchedulesScreenState extends State<SchedulesScreen> {
+  final StorageService _storageService = StorageService();
 
   @override
   void initState() {
@@ -33,139 +25,29 @@ class _SchedulesScreenState
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadSchedules();
     });
-
-    _scheduleTimer = Timer.periodic(
-      const Duration(seconds: 20),
-      (_) => _checkSchedules(),
-    );
   }
-
-  @override
-  void dispose() {
-    _scheduleTimer?.cancel();
-    super.dispose();
-  }
-
-  // =========================
-  // LOAD
-  // =========================
 
   Future<void> _loadSchedules() async {
-    final schedules =
-        await _storageService.loadSchedules();
+    final schedules = await _storageService.loadSchedules();
 
     if (!mounted) return;
 
-    context
-        .read<DeviceProvider>()
-        .loadSavedSchedules(schedules);
+    context.read<DeviceProvider>().loadSavedSchedules(schedules);
+
+    await ScheduleManager.instance.initialize();
   }
-
-  // =========================
-  // CHECK SCHEDULES
-  // =========================
-
-  Future<void> _checkSchedules() async {
-    if (!mounted) return;
-
-    final provider =
-        context.read<DeviceProvider>();
-
-    final device = provider.device;
-
-    if (device == null || !provider.isOnline) {
-      return;
-    }
-
-    final now = DateTime.now();
-
-    for (final schedule in provider.schedules) {
-      if (!schedule.enabled) continue;
-
-      final weekday = now.weekday;
-
-      if (!schedule.weekdays.contains(weekday)) {
-        continue;
-      }
-
-      if (schedule.hour != now.hour ||
-          schedule.minute != now.minute) {
-        continue;
-      }
-
-      final executionKey =
-          '${schedule.id}_${now.year}_${now.month}_${now.day}_${now.hour}_${now.minute}';
-
-      if (_lastExecutedKey == executionKey) {
-        continue;
-      }
-
-      _lastExecutedKey = executionKey;
-
-      await _executeSchedule(schedule);
-    }
-  }
-
-  // =========================
-  // EXECUTE
-  // =========================
-
-  Future<void> _executeSchedule(
-    RelaySchedule schedule,
-  ) async {
-    final provider =
-        context.read<DeviceProvider>();
-
-    final device = provider.device;
-
-    if (device == null) return;
-
-    bool success;
-
-    if (schedule.turnOn) {
-      success = await _apiService.turnRelayOn(
-        device.ipAddress,
-        schedule.relayId,
-      );
-    } else {
-      success = await _apiService.turnRelayOff(
-        device.ipAddress,
-        schedule.relayId,
-      );
-    }
-
-    if (!mounted) return;
-
-    if (success) {
-      provider.updateRelayState(
-        schedule.relayId,
-        schedule.turnOn,
-      );
-    } else {
-      provider.updateDeviceStatus(false);
-    }
-  }
-
-  // =========================
-  // CREATE
-  // =========================
 
   Future<void> _showCreateScheduleDialog() async {
-    final provider =
-        context.read<DeviceProvider>();
+    final provider = context.read<DeviceProvider>();
 
     if (provider.device == null) {
-      _showMessage(
-        'No ESP32 device connected.',
-      );
+      _showMessage('No ESP32 device connected.');
       return;
     }
 
     int selectedRelayId = 1;
     bool turnOn = true;
-
-    TimeOfDay selectedTime =
-        TimeOfDay.now();
+    TimeOfDay selectedTime = TimeOfDay.now();
 
     List<int> selectedDays = [
       1,
@@ -181,165 +63,190 @@ class _SchedulesScreenState
       context: context,
       builder: (dialogContext) {
         return StatefulBuilder(
-          builder: (
-            context,
-            setDialogState,
-          ) {
+          builder: (context, setDialogState) {
+            final inputBorder = OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(
+                color: SmartHomeColors.border,
+              ),
+            );
+
+            final focusedBorder = OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(
+                color: SmartHomeColors.gold,
+                width: 1.2,
+              ),
+            );
+
             return AlertDialog(
-              backgroundColor:
-                  const Color(0xff1E293B),
-              title: const Text(
-                'Create Schedule',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
+              backgroundColor: SmartHomeColors.surfaceElevated,
+              surfaceTintColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(24),
+                side: const BorderSide(
+                  color: SmartHomeColors.border,
                 ),
+              ),
+              titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+              contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 8),
+              actionsPadding: const EdgeInsets.fromLTRB(18, 8, 18, 18),
+              title: const Row(
+                children: [
+                  Icon(
+                    Icons.add_alarm_rounded,
+                    color: SmartHomeColors.gold,
+                  ),
+                  SizedBox(width: 12),
+                  Text(
+                    'Create Schedule',
+                    style: TextStyle(
+                      color: SmartHomeColors.textPrimary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
               ),
               content: SingleChildScrollView(
                 child: Column(
-                  mainAxisSize:
-                      MainAxisSize.min,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // RELAY
                     DropdownButtonFormField<int>(
                       value: selectedRelayId,
-                      decoration:
-                          const InputDecoration(
+                      dropdownColor: SmartHomeColors.surfaceElevated,
+                      style: const TextStyle(
+                        color: SmartHomeColors.textPrimary,
+                      ),
+                      decoration: InputDecoration(
                         labelText: 'Select Switch',
-                        border:
-                            OutlineInputBorder(),
+                        labelStyle: const TextStyle(
+                          color: SmartHomeColors.textSecondary,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.toggle_on_outlined,
+                          color: SmartHomeColors.gold,
+                        ),
+                        enabledBorder: inputBorder,
+                        focusedBorder: focusedBorder,
                       ),
                       items: provider.relays
                           .map(
-                            (relay) =>
-                                DropdownMenuItem<int>(
+                            (relay) => DropdownMenuItem<int>(
                               value: relay.id,
-                              child: Text(
-                                relay.name,
-                              ),
+                              child: Text(relay.name),
                             ),
                           )
                           .toList(),
                       onChanged: (value) {
-                        if (value == null) {
-                          return;
-                        }
+                        if (value == null) return;
 
                         setDialogState(() {
-                          selectedRelayId =
-                              value;
+                          selectedRelayId = value;
                         });
                       },
                     ),
-
-                    const SizedBox(height: 18),
-
-                    // TIME
+                    const SizedBox(height: 16),
                     InkWell(
                       onTap: () async {
-                        final picked =
-                            await showTimePicker(
+                        final picked = await showTimePicker(
                           context: context,
-                          initialTime:
-                              selectedTime,
+                          initialTime: selectedTime,
+                          builder: (context, child) {
+                            return Theme(
+                              data: Theme.of(context).copyWith(
+                                colorScheme: const ColorScheme.dark(
+                                  primary: SmartHomeColors.gold,
+                                  onPrimary: Colors.black,
+                                  surface: SmartHomeColors.surfaceElevated,
+                                  onSurface: SmartHomeColors.textPrimary,
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
                         );
 
-                        if (picked == null) {
-                          return;
-                        }
+                        if (picked == null) return;
 
                         setDialogState(() {
-                          selectedTime =
-                              picked;
+                          selectedTime = picked;
                         });
                       },
-                      borderRadius:
-                          BorderRadius.circular(
-                        8,
-                      ),
+                      borderRadius: BorderRadius.circular(14),
                       child: InputDecorator(
-                        decoration:
-                            const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Time',
-                          border:
-                              OutlineInputBorder(),
+                          labelStyle: const TextStyle(
+                            color: SmartHomeColors.textSecondary,
+                          ),
+                          prefixIcon: const Icon(
+                            Icons.access_time_rounded,
+                            color: SmartHomeColors.gold,
+                          ),
+                          enabledBorder: inputBorder,
+                          focusedBorder: focusedBorder,
                         ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.access_time,
-                            ),
-                            const SizedBox(
-                              width: 10,
-                            ),
-                            Text(
-                              selectedTime.format(
-                                context,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          selectedTime.format(context),
+                          style: const TextStyle(
+                            color: SmartHomeColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
-
-                    const SizedBox(height: 18),
-
-                    // ACTION
+                    const SizedBox(height: 16),
                     DropdownButtonFormField<bool>(
                       value: turnOn,
-                      decoration:
-                          const InputDecoration(
+                      dropdownColor: SmartHomeColors.surfaceElevated,
+                      style: const TextStyle(
+                        color: SmartHomeColors.textPrimary,
+                      ),
+                      decoration: InputDecoration(
                         labelText: 'Action',
-                        border:
-                            OutlineInputBorder(),
+                        labelStyle: const TextStyle(
+                          color: SmartHomeColors.textSecondary,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.power_settings_new_rounded,
+                          color: SmartHomeColors.gold,
+                        ),
+                        enabledBorder: inputBorder,
+                        focusedBorder: focusedBorder,
                       ),
                       items: const [
                         DropdownMenuItem(
                           value: true,
-                          child: Text(
-                            'Turn ON',
-                          ),
+                          child: Text('Turn ON'),
                         ),
                         DropdownMenuItem(
                           value: false,
-                          child: Text(
-                            'Turn OFF',
-                          ),
+                          child: Text('Turn OFF'),
                         ),
                       ],
                       onChanged: (value) {
-                        if (value == null) {
-                          return;
-                        }
+                        if (value == null) return;
 
                         setDialogState(() {
                           turnOn = value;
                         });
                       },
                     ),
-
-                    const SizedBox(height: 18),
-
-                    Align(
-                      alignment:
-                          Alignment.centerLeft,
+                    const SizedBox(height: 20),
+                    const Align(
+                      alignment: Alignment.centerLeft,
                       child: Text(
                         'Repeat',
                         style: TextStyle(
-                          color: Colors.white
-                              .withValues(
-                            alpha: 0.8,
-                          ),
-                          fontWeight:
-                              FontWeight.w600,
+                          color: SmartHomeColors.textPrimary,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
-
-                    const SizedBox(height: 8),
-
+                    const SizedBox(height: 10),
                     Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
+                      spacing: 7,
+                      runSpacing: 7,
                       children: [
                         _dayChip(
                           context,
@@ -398,36 +305,46 @@ class _SchedulesScreenState
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.pop(
-                      dialogContext,
-                    );
+                    Navigator.pop(dialogContext);
                   },
-                  child: const Text(
-                    'Cancel',
+                  style: TextButton.styleFrom(
+                    foregroundColor: SmartHomeColors.textSecondary,
                   ),
+                  child: const Text('Cancel'),
                 ),
-                FilledButton(
-                  onPressed:
-                      selectedDays.isEmpty
-                          ? null
-                          : () async {
-                              Navigator.pop(
-                                dialogContext,
-                              );
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    gradient: const LinearGradient(
+                      colors: [
+                        SmartHomeColors.goldLight,
+                        SmartHomeColors.gold,
+                      ],
+                    ),
+                  ),
+                  child: TextButton(
+                    onPressed: selectedDays.isEmpty
+                        ? null
+                        : () async {
+                            Navigator.pop(dialogContext);
 
-                              await _createSchedule(
-                                relayId:
-                                    selectedRelayId,
-                                time:
-                                    selectedTime,
-                                turnOn:
-                                    turnOn,
-                                weekdays:
-                                    selectedDays,
-                              );
-                            },
-                  child: const Text(
-                    'Save Schedule',
+                            await _createSchedule(
+                              relayId: selectedRelayId,
+                              time: selectedTime,
+                              turnOn: turnOn,
+                              weekdays: selectedDays,
+                            );
+                          },
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.black,
+                      disabledForegroundColor: Colors.black38,
+                    ),
+                    child: const Text(
+                      'Save Schedule',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
                   ),
                 ),
               ],
@@ -445,12 +362,25 @@ class _SchedulesScreenState
     List<int> selectedDays,
     StateSetter setDialogState,
   ) {
-    final selected =
-        selectedDays.contains(day);
+    final selected = selectedDays.contains(day);
 
     return FilterChip(
       label: Text(label),
       selected: selected,
+      showCheckmark: false,
+      selectedColor: SmartHomeColors.gold.withOpacity(.18),
+      backgroundColor: SmartHomeColors.background,
+      side: BorderSide(
+        color: selected
+            ? SmartHomeColors.gold
+            : SmartHomeColors.border,
+      ),
+      labelStyle: TextStyle(
+        color: selected
+            ? SmartHomeColors.goldLight
+            : SmartHomeColors.textSecondary,
+        fontWeight: FontWeight.w700,
+      ),
       onSelected: (value) {
         setDialogState(() {
           if (value) {
@@ -465,23 +395,28 @@ class _SchedulesScreenState
     );
   }
 
-  // =========================
-  // SAVE NEW SCHEDULE
-  // =========================
-
   Future<void> _createSchedule({
     required int relayId,
     required TimeOfDay time,
     required bool turnOn,
     required List<int> weekdays,
   }) async {
-    final provider =
-        context.read<DeviceProvider>();
-
-    final relay =
-        provider.getRelay(relayId);
+    final provider = context.read<DeviceProvider>();
+    final relay = provider.getRelay(relayId);
 
     if (relay == null) return;
+
+    final scheduler = ScheduleManager.instance;
+
+    final permissionGranted =
+        await scheduler.requestExactAlarmPermission();
+
+    if (!permissionGranted) {
+      _showMessage(
+        'Exact alarm permission is required for reliable schedules. Enable it in Android settings.',
+      );
+      return;
+    }
 
     final schedule = RelaySchedule(
       id: '${DateTime.now().millisecondsSinceEpoch}_$relayId',
@@ -489,71 +424,54 @@ class _SchedulesScreenState
       relayName: relay.name,
       hour: time.hour,
       minute: time.minute,
-      weekdays: List<int>.from(
-        weekdays,
-      ),
+      weekdays: List<int>.from(weekdays),
       turnOn: turnOn,
       enabled: true,
     );
 
     provider.addSchedule(schedule);
 
-    await _storageService.saveSchedules(
-      provider.schedules,
-    );
+    await _storageService.saveSchedules(provider.schedules);
 
-    _showMessage(
-      'Schedule created for ${relay.name}.',
-    );
+    final armed = await scheduler.scheduleOne(schedule);
+
+    if (!armed) {
+      provider.removeSchedule(schedule.id);
+      await _storageService.saveSchedules(provider.schedules);
+      _showMessage('Could not arm the schedule. Please try again.');
+      return;
+    }
+
+    _showMessage('Schedule created for ${relay.name}.');
   }
 
-  // =========================
-  // DELETE
-  // =========================
+  Future<void> _deleteSchedule(RelaySchedule schedule) async {
+    final provider = context.read<DeviceProvider>();
 
-  Future<void> _deleteSchedule(
-    RelaySchedule schedule,
-  ) async {
-    final provider =
-        context.read<DeviceProvider>();
+    await ScheduleManager.instance.delete(schedule);
 
-    provider.removeSchedule(
-      schedule.id,
-    );
+    provider.removeSchedule(schedule.id);
 
-    await _storageService.saveSchedules(
-      provider.schedules,
-    );
+    await _storageService.saveSchedules(provider.schedules);
 
-    _showMessage(
-      'Schedule deleted.',
-    );
+    _showMessage('Schedule deleted.');
   }
-
-  // =========================
-  // ENABLE / DISABLE
-  // =========================
 
   Future<void> _toggleSchedule(
     RelaySchedule schedule,
     bool enabled,
   ) async {
-    final provider =
-        context.read<DeviceProvider>();
+    final provider = context.read<DeviceProvider>();
 
     provider.toggleSchedule(
       schedule.id,
       enabled,
     );
 
-    await _storageService.saveSchedules(
-      provider.schedules,
-    );
-  }
+    await _storageService.saveSchedules(provider.schedules);
 
-  // =========================
-  // FORMAT TIME
-  // =========================
+    await ScheduleManager.instance.syncSchedule(schedule);
+  }
 
   String _formatTime(
     BuildContext context,
@@ -567,13 +485,7 @@ class _SchedulesScreenState
     return time.format(context);
   }
 
-  // =========================
-  // DAYS
-  // =========================
-
-  String _formatDays(
-    RelaySchedule schedule,
-  ) {
+  String _formatDays(RelaySchedule schedule) {
     if (schedule.weekdays.length == 7) {
       return 'Every day';
     }
@@ -607,13 +519,7 @@ class _SchedulesScreenState
         .join(', ');
   }
 
-  // =========================
-  // MESSAGE
-  // =========================
-
-  void _showMessage(
-    String message,
-  ) {
+  void _showMessage(String message) {
     if (!mounted) return;
 
     ScaffoldMessenger.of(context)
@@ -621,174 +527,220 @@ class _SchedulesScreenState
       ..showSnackBar(
         SnackBar(
           content: Text(message),
-          behavior:
-              SnackBarBehavior.floating,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: SmartHomeColors.surfaceElevated,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: const BorderSide(
+              color: SmartHomeColors.borderGold,
+            ),
+          ),
         ),
       );
   }
 
-  // =========================
-  // UI
-  // =========================
-
   @override
   Widget build(BuildContext context) {
+    final horizontalPadding =
+        SmartHomeResponsive.horizontalPadding(context);
+    final maxWidth =
+        SmartHomeResponsive.isLargeScreen(context) ? 1000.0 : 760.0;
+
     return Scaffold(
+      backgroundColor: SmartHomeColors.background,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        foregroundColor: SmartHomeColors.textPrimary,
+        elevation: 0,
         title: const Text(
           'Schedules',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
-      floatingActionButton:
-          FloatingActionButton.extended(
-        onPressed:
-            _showCreateScheduleDialog,
-        icon: const Icon(
-          Icons.add_alarm,
-        ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _showCreateScheduleDialog,
+        backgroundColor: SmartHomeColors.gold,
+        foregroundColor: Colors.black,
+        elevation: 8,
+        icon: const Icon(Icons.add_alarm_rounded),
         label: const Text(
           'New Schedule',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+          ),
         ),
       ),
-      body: Consumer<DeviceProvider>(
-        builder: (
-          context,
-          provider,
-          child,
-        ) {
-          if (provider.schedules.isEmpty) {
-            return _emptyState();
-          }
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: RadialGradient(
+            center: Alignment.topCenter,
+            radius: 1.2,
+            colors: [
+              Color(0xFF17120A),
+              SmartHomeColors.background,
+              Colors.black,
+            ],
+            stops: [0.0, 0.48, 1.0],
+          ),
+        ),
+        child: Consumer<DeviceProvider>(
+          builder: (context, provider, child) {
+            if (provider.schedules.isEmpty) {
+              return _emptyState();
+            }
 
-          return ListView.builder(
-            padding:
-                const EdgeInsets.fromLTRB(
-              16,
-              16,
-              16,
-              100,
-            ),
-            itemCount:
-                provider.schedules.length,
-            itemBuilder:
-                (context, index) {
-              final schedule =
-                  provider.schedules[index];
+            return Center(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: maxWidth,
+                ),
+                child: ListView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  padding: EdgeInsets.fromLTRB(
+                    horizontalPadding,
+                    14,
+                    horizontalPadding,
+                    110,
+                  ),
+                  itemCount: provider.schedules.length,
+                  itemBuilder: (context, index) {
+                    final schedule = provider.schedules[index];
 
-              return _scheduleCard(
-                schedule,
-              );
-            },
-          );
-        },
+                    return _scheduleCard(
+                      context,
+                      schedule,
+                    );
+                  },
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
-
-  // =========================
-  // EMPTY STATE
-  // =========================
 
   Widget _emptyState() {
     return Center(
-      child: Padding(
-        padding:
-            const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 90,
-              height: 90,
-              decoration:
-                  BoxDecoration(
-                color:
-                    const Color(0xff1E293B),
-                borderRadius:
-                    BorderRadius.circular(
-                  28,
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(32),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(
+            maxWidth: 460,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 92,
+                height: 92,
+                decoration: BoxDecoration(
+                  color: SmartHomeColors.surface,
+                  borderRadius: BorderRadius.circular(28),
+                  border: Border.all(
+                    color: SmartHomeColors.borderGold,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: SmartHomeColors.gold.withOpacity(.12),
+                      blurRadius: 28,
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.calendar_month_outlined,
+                  size: 46,
+                  color: SmartHomeColors.goldLight,
                 ),
               ),
-              child: const Icon(
-                Icons.calendar_month_outlined,
-                size: 45,
-                color:
-                    Color(0xff34B7F1),
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            const Text(
-              'No Schedules',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight:
-                    FontWeight.bold,
-              ),
-            ),
-
-            const SizedBox(height: 10),
-
-            Text(
-              'Create automatic ON or OFF schedules for your switches.',
-              textAlign:
-                  TextAlign.center,
-              style: TextStyle(
-                color: Colors.white
-                    .withValues(
-                  alpha: 0.65,
+              const SizedBox(height: 24),
+              const Text(
+                'No Schedules',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: SmartHomeColors.textPrimary,
+                  fontSize: 23,
+                  fontWeight: FontWeight.w700,
                 ),
-                height: 1.5,
               ),
-            ),
-
-            const SizedBox(height: 24),
-
-            FilledButton.icon(
-              onPressed:
-                  _showCreateScheduleDialog,
-              icon: const Icon(
-                Icons.add_alarm,
+              const SizedBox(height: 10),
+              const Text(
+                'Create automatic ON or OFF schedules for your switches.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: SmartHomeColors.textSecondary,
+                  fontSize: 14,
+                  height: 1.55,
+                ),
               ),
-              label: const Text(
-                'Create Schedule',
+              const SizedBox(height: 24),
+              DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  gradient: const LinearGradient(
+                    colors: [
+                      SmartHomeColors.goldLight,
+                      SmartHomeColors.gold,
+                    ],
+                  ),
+                ),
+                child: TextButton.icon(
+                  onPressed: _showCreateScheduleDialog,
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 13,
+                    ),
+                  ),
+                  icon: const Icon(Icons.add_alarm_rounded),
+                  label: const Text(
+                    'Create Schedule',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // =========================
-  // SCHEDULE CARD
-  // =========================
-
   Widget _scheduleCard(
+    BuildContext context,
     RelaySchedule schedule,
   ) {
-    return Card(
-      color:
-          const Color(0xff1E293B),
-      margin:
-          const EdgeInsets.only(
-        bottom: 14,
+    final isOnAction = schedule.turnOn;
+
+    return Container(
+      margin: EdgeInsets.only(
+        bottom: SmartHomeResponsive.cardSpacing(context),
       ),
-      shape:
-          RoundedRectangleBorder(
-        borderRadius:
-            BorderRadius.circular(
-          20,
+      decoration: BoxDecoration(
+        color: SmartHomeColors.surface.withOpacity(.95),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: schedule.enabled
+              ? SmartHomeColors.borderGold
+              : SmartHomeColors.border,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(.28),
+            blurRadius: 24,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Padding(
-        padding:
-            const EdgeInsets.all(18),
+        padding: EdgeInsets.all(
+          SmartHomeResponsive.isSmallPhone(context) ? 15 : 18,
+        ),
         child: Column(
           children: [
             Row(
@@ -796,176 +748,129 @@ class _SchedulesScreenState
                 Container(
                   width: 52,
                   height: 52,
-                  decoration:
-                      BoxDecoration(
-                    color:
-                        const Color(
-                      0xff34B7F1,
-                    ).withValues(
-                      alpha: 0.12,
-                    ),
-                    borderRadius:
-                        BorderRadius.circular(
-                      16,
+                  decoration: BoxDecoration(
+                    color: SmartHomeColors.gold.withOpacity(.10),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: SmartHomeColors.gold.withOpacity(.22),
                     ),
                   ),
                   child: Icon(
-                    schedule.turnOn
-                        ? Icons.power_settings_new
-                        : Icons.power_off,
-                    color:
-                        const Color(
-                      0xff34B7F1,
-                    ),
-                    size: 27,
+                    isOnAction
+                        ? Icons.power_settings_new_rounded
+                        : Icons.power_off_rounded,
+                    color: SmartHomeColors.goldLight,
+                    size: 26,
                   ),
                 ),
-
-                const SizedBox(
-                  width: 14,
-                ),
-
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
-                    crossAxisAlignment:
-                        CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         schedule.relayName,
-                        style:
-                            const TextStyle(
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: SmartHomeColors.textPrimary,
                           fontSize: 17,
-                          fontWeight:
-                              FontWeight.bold,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-
-                      const SizedBox(
-                        height: 5,
-                      ),
-
+                      const SizedBox(height: 5),
                       Text(
-                        schedule.turnOn
-                            ? 'Turn ON'
-                            : 'Turn OFF',
-                        style:
-                            TextStyle(
+                        isOnAction ? 'Turn ON' : 'Turn OFF',
+                        style: TextStyle(
+                          color: isOnAction
+                              ? SmartHomeColors.online
+                              : SmartHomeColors.warning,
                           fontSize: 13,
-                          color: schedule
-                                  .turnOn
-                              ? Colors.green
-                              : Colors.orange,
-                          fontWeight:
-                              FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ],
                   ),
                 ),
-
                 Switch(
-                  value:
-                      schedule.enabled,
+                  value: schedule.enabled,
                   onChanged: (value) {
                     _toggleSchedule(
                       schedule,
                       value,
                     );
                   },
+                  activeColor: SmartHomeColors.gold,
+                  activeTrackColor:
+                      SmartHomeColors.gold.withOpacity(.28),
+                  inactiveThumbColor: SmartHomeColors.textMuted,
+                  inactiveTrackColor:
+                      SmartHomeColors.background,
                 ),
               ],
             ),
-
-            const SizedBox(
-              height: 16,
-            ),
-
+            const SizedBox(height: 15),
             Container(
               width: double.infinity,
-              padding:
-                  const EdgeInsets.all(16),
-              decoration:
-                  BoxDecoration(
-                color:
-                    Colors.black.withValues(
-                  alpha: 0.15,
-                ),
-                borderRadius:
-                    BorderRadius.circular(
-                  16,
+              padding: const EdgeInsets.all(15),
+              decoration: BoxDecoration(
+                color: SmartHomeColors.background,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: SmartHomeColors.border,
                 ),
               ),
               child: Row(
                 children: [
                   const Icon(
-                    Icons.access_time,
+                    Icons.access_time_rounded,
                     size: 20,
-                    color:
-                        Color(0xff34B7F1),
+                    color: SmartHomeColors.gold,
                   ),
-
-                  const SizedBox(
-                    width: 10,
-                  ),
-
+                  const SizedBox(width: 10),
                   Text(
                     _formatTime(
                       context,
                       schedule,
                     ),
-                    style:
-                        const TextStyle(
-                      fontSize: 24,
-                      fontWeight:
-                          FontWeight.bold,
+                    style: const TextStyle(
+                      color: SmartHomeColors.textPrimary,
+                      fontSize: 23,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-
                   const Spacer(),
-
-                  Text(
-                    _formatDays(
-                      schedule,
-                    ),
-                    style:
-                        const TextStyle(
-                      color:
-                          Colors.white54,
-                      fontSize: 12,
+                  Flexible(
+                    child: Text(
+                      _formatDays(schedule),
+                      textAlign: TextAlign.right,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: SmartHomeColors.textSecondary,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-
-            const SizedBox(
-              height: 8,
-            ),
-
-            Row(
-              mainAxisAlignment:
-                  MainAxisAlignment.end,
-              children: [
-                TextButton.icon(
-                  onPressed: () {
-                    _deleteSchedule(
-                      schedule,
-                    );
-                  },
-                  icon: const Icon(
-                    Icons.delete_outline,
-                    size: 19,
-                  ),
-                  label: const Text(
-                    'Delete',
-                  ),
-                  style:
-                      TextButton.styleFrom(
-                    foregroundColor:
-                        Colors.redAccent,
-                  ),
+            const SizedBox(height: 6),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () {
+                  _deleteSchedule(schedule);
+                },
+                icon: const Icon(
+                  Icons.delete_outline_rounded,
+                  size: 19,
                 ),
-              ],
+                label: const Text('Delete'),
+                style: TextButton.styleFrom(
+                  foregroundColor: SmartHomeColors.offline,
+                ),
+              ),
             ),
           ],
         ),
