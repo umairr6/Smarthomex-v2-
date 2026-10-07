@@ -77,10 +77,10 @@ class _SplashScreenState extends State<SplashScreen>
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 800),
-        pageBuilder: (_, animation, __) {
+        pageBuilder: (_, animation, _) {
           return const AuthGate();
         },
-        transitionsBuilder: (_, animation, __, child) {
+        transitionsBuilder: (_, animation, _, child) {
           return FadeTransition(
             opacity: CurvedAnimation(
               parent: animation,
@@ -144,7 +144,7 @@ class _SplashScreenState extends State<SplashScreen>
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFD6B36A).withOpacity(0.08),
+                        color: const Color(0xFFD6B36A).withValues(alpha: 0.08),
                         blurRadius: 100,
                         spreadRadius: 25,
                       ),
@@ -188,7 +188,7 @@ class _SplashScreenState extends State<SplashScreen>
                               boxShadow: [
                                 BoxShadow(
                                   color: const Color(0xFFD6B36A)
-                                      .withOpacity(0.22),
+                                      .withValues(alpha: 0.22),
                                   blurRadius: 35,
                                   spreadRadius: 4,
                                 ),

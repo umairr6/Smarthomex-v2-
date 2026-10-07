@@ -210,15 +210,15 @@ class _LoadingScreen extends StatelessWidget {
               width: 64,
               height: 64,
               decoration: BoxDecoration(
-                color: SmartHomeColors.gold.withOpacity(.10),
+                color: SmartHomeColors.gold.withValues(alpha: 0.10),
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: SmartHomeColors.gold.withOpacity(.35),
+                  color: SmartHomeColors.gold.withValues(alpha: 0.35),
                   width: 1,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: SmartHomeColors.gold.withOpacity(.12),
+                    color: SmartHomeColors.gold.withValues(alpha: 0.12),
                     blurRadius: 25,
                     spreadRadius: 2,
                   ),

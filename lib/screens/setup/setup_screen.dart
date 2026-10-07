@@ -225,7 +225,7 @@ class _SetupScreenState extends State<SetupScreen> {
             ),
             boxShadow: [
               BoxShadow(
-                color: SmartHomeColors.gold.withOpacity(.14),
+                color: SmartHomeColors.gold.withValues(alpha: 0.14),
                 blurRadius: 28,
                 spreadRadius: 2,
               ),
@@ -268,14 +268,14 @@ class _SetupScreenState extends State<SetupScreen> {
         SmartHomeResponsive.isSmallPhone(context) ? 16 : 20,
       ),
       decoration: BoxDecoration(
-        color: SmartHomeColors.surface.withOpacity(.95),
+        color: SmartHomeColors.surface.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: SmartHomeColors.border,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(.38),
+            color: Colors.black.withValues(alpha: 0.38),
             blurRadius: 30,
             offset: const Offset(0, 14),
           ),
@@ -344,7 +344,7 @@ class _SetupScreenState extends State<SetupScreen> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: SmartHomeColors.gold.withOpacity(.16),
+                    color: SmartHomeColors.gold.withValues(alpha: 0.16),
                     blurRadius: 18,
                     offset: const Offset(0, 7),
                   ),
@@ -402,7 +402,7 @@ class _SetupScreenState extends State<SetupScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: SmartHomeColors.surface.withOpacity(.72),
+        color: SmartHomeColors.surface.withValues(alpha: 0.72),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: SmartHomeColors.border,

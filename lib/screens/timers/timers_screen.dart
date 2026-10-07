@@ -99,7 +99,7 @@ class _TimersScreenState extends State<TimersScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   DropdownButtonFormField<int>(
-                    value: selectedRelayId,
+                    initialValue: selectedRelayId,
                     dropdownColor: SmartHomeColors.surfaceElevated,
                     style: const TextStyle(color: Colors.white),
                     decoration: _inputDecoration('Select Switch'),
@@ -127,7 +127,7 @@ class _TimersScreenState extends State<TimersScreen> {
                   ),
                   const SizedBox(height: 18),
                   DropdownButtonFormField<int>(
-                    value: selectedDuration,
+                    initialValue: selectedDuration,
                     dropdownColor: SmartHomeColors.surfaceElevated,
                     style: const TextStyle(color: Colors.white),
                     decoration: _inputDecoration('Duration'),
@@ -358,7 +358,7 @@ class _TimersScreenState extends State<TimersScreen> {
               width: 92,
               height: 92,
               decoration: BoxDecoration(
-                color: SmartHomeColors.gold.withOpacity(.10),
+                color: SmartHomeColors.gold.withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(28),
                 border: Border.all(color: SmartHomeColors.borderGold),
               ),
@@ -416,7 +416,7 @@ class _TimersScreenState extends State<TimersScreen> {
                 width: 54,
                 height: 54,
                 decoration: BoxDecoration(
-                  color: SmartHomeColors.gold.withOpacity(.11),
+                  color: SmartHomeColors.gold.withValues(alpha: 0.11),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(icon, color: SmartHomeColors.gold, size: 27),
@@ -453,7 +453,7 @@ class _TimersScreenState extends State<TimersScreen> {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 17),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(.22),
+              color: Colors.black.withValues(alpha: 0.22),
               borderRadius: BorderRadius.circular(17),
             ),
             child: Column(

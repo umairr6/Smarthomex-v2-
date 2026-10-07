@@ -62,21 +62,18 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
 
       setState(() {
         _deviceInfo = info;
-        _nameController.text =
-            info['name'] as String? ?? 'SmartHomeX ESP32';
+        _nameController.text = info['name'] as String? ?? 'SmartHomeX ESP32';
       });
     } catch (e) {
       if (!mounted) return;
 
-      _showMessage(
-        e.toString().replaceFirst('Exception: ', ''),
-      );
+      _showMessage(e.toString().replaceFirst('Exception: ', ''));
     } finally {
-      if (!mounted) return;
-
-      setState(() {
-        _checking = false;
-      });
+      if (mounted) {
+        setState(() {
+          _checking = false;
+        });
+      }
     }
   }
 
@@ -89,8 +86,7 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
 
     final deviceUid = _deviceInfo!['device_uid'] as String;
 
-    final relayCount =
-        (_deviceInfo!['relay_count'] as num?)?.toInt() ?? 4;
+    final relayCount = (_deviceInfo!['relay_count'] as num?)?.toInt() ?? 4;
 
     setState(() {
       _pairing = true;
@@ -109,9 +105,7 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
 
       _showMessage('ESP32 paired successfully!');
 
-      await Future.delayed(
-        const Duration(milliseconds: 500),
-      );
+      await Future.delayed(const Duration(milliseconds: 500));
 
       if (!mounted) return;
 
@@ -119,15 +113,13 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
     } catch (e) {
       if (!mounted) return;
 
-      _showMessage(
-        e.toString().replaceFirst('Exception: ', ''),
-      );
+      _showMessage(e.toString().replaceFirst('Exception: ', ''));
     } finally {
-      if (!mounted) return;
-
-      setState(() {
-        _pairing = false;
-      });
+      if (mounted) {
+        setState(() {
+          _pairing = false;
+        });
+      }
     }
   }
 
@@ -136,9 +128,7 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
       SnackBar(
         content: Text(
           message,
-          style: const TextStyle(
-            color: SmartHomeColors.textPrimary,
-          ),
+          style: const TextStyle(color: SmartHomeColors.textPrimary),
         ),
         behavior: SnackBarBehavior.floating,
         backgroundColor: SmartHomeColors.surfaceElevated,
@@ -148,9 +138,7 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
         ),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
-          side: const BorderSide(
-            color: SmartHomeColors.border,
-          ),
+          side: const BorderSide(color: SmartHomeColors.border),
         ),
       ),
     );
@@ -158,10 +146,8 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final horizontalPadding =
-        SmartHomeResponsive.horizontalPadding(context);
-    final maxWidth =
-        SmartHomeResponsive.maxContentWidth(context);
+    final horizontalPadding = SmartHomeResponsive.horizontalPadding(context);
+    final maxWidth = SmartHomeResponsive.maxContentWidth(context);
 
     return Scaffold(
       backgroundColor: SmartHomeColors.background,
@@ -173,22 +159,16 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
         titleSpacing: horizontalPadding,
         title: const Text(
           'Pair Device',
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            letterSpacing: -.2,
-          ),
+          style: TextStyle(fontWeight: FontWeight.w700, letterSpacing: -.2),
         ),
       ),
       body: SafeArea(
         top: false,
         child: Center(
           child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: maxWidth,
-            ),
+            constraints: BoxConstraints(maxWidth: maxWidth),
             child: ListView(
-              keyboardDismissBehavior:
-                  ScrollViewKeyboardDismissBehavior.onDrag,
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               padding: EdgeInsets.fromLTRB(
                 horizontalPadding,
                 12,
@@ -253,12 +233,10 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
       decoration: BoxDecoration(
         color: SmartHomeColors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: SmartHomeColors.border,
-        ),
+        border: Border.all(color: SmartHomeColors.border),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(.22),
+            color: Colors.black.withValues(alpha: 0.22),
             blurRadius: 24,
             offset: const Offset(0, 10),
           ),
@@ -270,10 +248,10 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
             width: 50,
             height: 50,
             decoration: BoxDecoration(
-              color: SmartHomeColors.gold.withOpacity(.11),
+              color: SmartHomeColors.gold.withValues(alpha: 0.11),
               borderRadius: BorderRadius.circular(15),
               border: Border.all(
-                color: SmartHomeColors.gold.withOpacity(.25),
+                color: SmartHomeColors.gold.withValues(alpha: 0.25),
               ),
             ),
             child: const Icon(
@@ -332,19 +310,11 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
       controller: _ipController,
       keyboardType: TextInputType.url,
       textInputAction: TextInputAction.search,
-      style: const TextStyle(
-        color: SmartHomeColors.textPrimary,
-        fontSize: 15,
-      ),
+      style: const TextStyle(color: SmartHomeColors.textPrimary, fontSize: 15),
       decoration: InputDecoration(
         hintText: 'Example: 10.159.167.161',
-        hintStyle: const TextStyle(
-          color: SmartHomeColors.textMuted,
-        ),
-        prefixIcon: const Icon(
-          Icons.wifi_rounded,
-          color: SmartHomeColors.gold,
-        ),
+        hintStyle: const TextStyle(color: SmartHomeColors.textMuted),
+        prefixIcon: const Icon(Icons.wifi_rounded, color: SmartHomeColors.gold),
         filled: true,
         fillColor: SmartHomeColors.surface,
         contentPadding: const EdgeInsets.symmetric(
@@ -353,16 +323,11 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(
-            color: SmartHomeColors.border,
-          ),
+          borderSide: const BorderSide(color: SmartHomeColors.border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(
-            color: SmartHomeColors.gold,
-            width: 1.2,
-          ),
+          borderSide: const BorderSide(color: SmartHomeColors.gold, width: 1.2),
         ),
       ),
       onSubmitted: (_) => _checkDevice(),
@@ -385,49 +350,39 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
                 ),
               )
             : const Icon(Icons.search_rounded),
-        label: Text(
-          _checking ? 'Checking Device...' : 'Find Device',
-        ),
+        label: Text(_checking ? 'Checking Device...' : 'Find Device'),
         style: ElevatedButton.styleFrom(
           backgroundColor: SmartHomeColors.gold,
           foregroundColor: SmartHomeColors.background,
-          disabledBackgroundColor:
-              SmartHomeColors.gold.withOpacity(.35),
-          disabledForegroundColor:
-              SmartHomeColors.background.withOpacity(.7),
+          disabledBackgroundColor: SmartHomeColors.gold.withValues(alpha: 0.35),
+          disabledForegroundColor: SmartHomeColors.background.withValues(
+            alpha: 0.7,
+          ),
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          textStyle: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w800,
-          ),
+          textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
         ),
       ),
     );
   }
 
   Widget _buildDeviceFoundCard() {
-    final deviceUid =
-        _deviceInfo!['device_uid']?.toString() ?? '-';
+    final deviceUid = _deviceInfo!['device_uid']?.toString() ?? '-';
     final ipAddress =
-        _deviceInfo!['ip_address']?.toString() ??
-            _ipController.text;
-    final relayCount =
-        '${_deviceInfo!['relay_count'] ?? 4}';
+        _deviceInfo!['ip_address']?.toString() ?? _ipController.text;
+    final relayCount = '${_deviceInfo!['relay_count'] ?? 4}';
 
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: SmartHomeColors.surface,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: SmartHomeColors.gold.withOpacity(.42),
-        ),
+        border: Border.all(color: SmartHomeColors.gold.withValues(alpha: 0.42)),
         boxShadow: [
           BoxShadow(
-            color: SmartHomeColors.gold.withOpacity(.06),
+            color: SmartHomeColors.gold.withValues(alpha: 0.06),
             blurRadius: 25,
             spreadRadius: 1,
           ),
@@ -442,10 +397,10 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: SmartHomeColors.online.withOpacity(.11),
+                  color: SmartHomeColors.online.withValues(alpha: 0.11),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: SmartHomeColors.online.withOpacity(.22),
+                    color: SmartHomeColors.online.withValues(alpha: 0.22),
                   ),
                 ),
                 child: const Icon(
@@ -504,9 +459,7 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
             ),
             decoration: InputDecoration(
               hintText: 'SmartHomeX ESP32',
-              hintStyle: const TextStyle(
-                color: SmartHomeColors.textMuted,
-              ),
+              hintStyle: const TextStyle(color: SmartHomeColors.textMuted),
               filled: true,
               fillColor: SmartHomeColors.surfaceElevated,
               prefixIcon: const Icon(
@@ -519,15 +472,11 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(
-                  color: SmartHomeColors.border,
-                ),
+                borderSide: const BorderSide(color: SmartHomeColors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
-                borderSide: const BorderSide(
-                  color: SmartHomeColors.gold,
-                ),
+                borderSide: const BorderSide(color: SmartHomeColors.gold),
               ),
             ),
           ),
@@ -547,14 +496,13 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
                       ),
                     )
                   : const Icon(Icons.link_rounded),
-              label: Text(
-                _pairing ? 'Pairing...' : 'Pair This Device',
-              ),
+              label: Text(_pairing ? 'Pairing...' : 'Pair This Device'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: SmartHomeColors.gold,
                 foregroundColor: SmartHomeColors.background,
-                disabledBackgroundColor:
-                    SmartHomeColors.gold.withOpacity(.35),
+                disabledBackgroundColor: SmartHomeColors.gold.withValues(
+                  alpha: 0.35,
+                ),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(15),
@@ -606,11 +554,9 @@ class _PairDeviceScreenState extends State<PairDeviceScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: SmartHomeColors.surface.withOpacity(.72),
+        color: SmartHomeColors.surface.withValues(alpha: 0.72),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: SmartHomeColors.border,
-        ),
+        border: Border.all(color: SmartHomeColors.border),
       ),
       child: const Row(
         crossAxisAlignment: CrossAxisAlignment.start,

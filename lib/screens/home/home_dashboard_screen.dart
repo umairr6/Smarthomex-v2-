@@ -44,8 +44,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
   // LUXURY COLORS
   // =========================================================
 
-  static const Color bg = Color(0xff070707);
-  static const Color surface = Color(0xff111111);
+
   static const Color surface2 = Color(0xff171717);
 
   static const Color primary = Color(0xFFD6B36A);
@@ -784,7 +783,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: primary.withOpacity(.12),
+              color: primary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Icon(icon, color: primary),
@@ -850,7 +849,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           width: 46,
           height: 46,
           decoration: BoxDecoration(
-            color: primary.withOpacity(.10),
+            color: primary.withValues(alpha: 0.10),
             borderRadius: BorderRadius.circular(15),
           ),
           child: Icon(icon, color: primary),
@@ -880,7 +879,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         width: 42,
         height: 42,
         decoration: BoxDecoration(
-          color: iconColor.withOpacity(.10),
+          color: iconColor.withValues(alpha: 0.10),
           borderRadius: BorderRadius.circular(13),
         ),
         child: Icon(icon, color: iconColor, size: 20),
@@ -925,12 +924,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     return Container(
       margin: EdgeInsets.only(bottom: _spacing(context) * 1.5),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(.48),
+        color: Colors.black.withValues(alpha: 0.48),
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Colors.white.withOpacity(.13)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.13)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(.35),
+            color: Colors.black.withValues(alpha: 0.35),
             blurRadius: 30,
             offset: const Offset(0, 12),
           ),
@@ -982,8 +981,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            primary.withOpacity(.16),
-            Colors.black.withOpacity(.05),
+            primary.withValues(alpha: 0.16),
+            Colors.black.withValues(alpha: 0.05),
             Colors.transparent,
           ],
         ),
@@ -996,11 +995,11 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                 width: 58,
                 height: 58,
                 decoration: BoxDecoration(
-                  color: primary.withOpacity(.14),
+                  color: primary.withValues(alpha: 0.14),
                   borderRadius: BorderRadius.circular(19),
-                  border: Border.all(color: primary.withOpacity(.30)),
+                  border: Border.all(color: primary.withValues(alpha: 0.30)),
                   boxShadow: [
-                    BoxShadow(color: primary.withOpacity(.12), blurRadius: 18),
+                    BoxShadow(color: primary.withValues(alpha: 0.12), blurRadius: 18),
                   ],
                 ),
                 child: const Icon(
@@ -1057,7 +1056,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               ),
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(.07),
+                  color: Colors.white.withValues(alpha: 0.07),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: IconButton(
@@ -1107,9 +1106,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 13),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(.28),
+        color: Colors.black.withValues(alpha: 0.28),
         borderRadius: BorderRadius.circular(17),
-        border: Border.all(color: Colors.white.withOpacity(.08)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
       child: Column(
         children: [
@@ -1205,12 +1204,12 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
         child: Container(
           padding: const EdgeInsets.all(15),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(.42),
+            color: Colors.black.withValues(alpha: 0.42),
             borderRadius: BorderRadius.circular(22),
             border: Border.all(
               color: hasDevice
-                  ? primary.withOpacity(.20)
-                  : Colors.white.withOpacity(.08),
+                  ? primary.withValues(alpha: 0.20)
+                  : Colors.white.withValues(alpha: 0.08),
             ),
           ),
           child: Column(
@@ -1223,8 +1222,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                     height: 43,
                     decoration: BoxDecoration(
                       color: hasDevice
-                          ? primary.withOpacity(.13)
-                          : Colors.white.withOpacity(.06),
+                          ? primary.withValues(alpha: 0.13)
+                          : Colors.white.withValues(alpha: 0.06),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Icon(
@@ -1281,8 +1280,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: isOnline
-                              ? Colors.greenAccent.withOpacity(.75)
-                              : Colors.redAccent.withOpacity(.75),
+                              ? Colors.greenAccent.withValues(alpha: 0.75)
+                              : Colors.redAccent.withValues(alpha: 0.75),
                           fontSize: 9.5,
                         ),
                       ),
@@ -1330,9 +1329,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           onTap: () => _addRoom(homeId),
           child: Container(
             decoration: BoxDecoration(
-              color: primary.withOpacity(.09),
+              color: primary.withValues(alpha: 0.09),
               borderRadius: BorderRadius.circular(17),
-              border: Border.all(color: primary.withOpacity(.25)),
+              border: Border.all(color: primary.withValues(alpha: 0.25)),
             ),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -1369,7 +1368,7 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             width: 62,
             height: 62,
             decoration: BoxDecoration(
-              color: primary.withOpacity(.08),
+              color: primary.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
             child: const Icon(
@@ -1404,9 +1403,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
       margin: const EdgeInsets.only(bottom: 22),
       padding: const EdgeInsets.fromLTRB(25, 35, 25, 32),
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(.48),
+        color: Colors.black.withValues(alpha: 0.48),
         borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: Colors.white.withOpacity(.10)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
       ),
       child: Column(
         children: [
@@ -1415,8 +1414,8 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
             height: 82,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: primary.withOpacity(.12),
-              border: Border.all(color: primary.withOpacity(.22)),
+              color: primary.withValues(alpha: 0.12),
+              border: Border.all(color: primary.withValues(alpha: 0.22)),
             ),
             child: const Icon(
               Icons.home_work_rounded,
@@ -1571,9 +1570,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(.45),
+                color: Colors.black.withValues(alpha: 0.45),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: primary.withOpacity(.35)),
+                border: Border.all(color: primary.withValues(alpha: 0.35)),
               ),
               child: const Icon(
                 Icons.home_rounded,
@@ -1597,9 +1596,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           Container(
             margin: const EdgeInsets.only(right: 5),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(.40),
+              color: Colors.black.withValues(alpha: 0.40),
               borderRadius: BorderRadius.circular(13),
-              border: Border.all(color: Colors.white.withOpacity(.10)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
             ),
             child: IconButton(
               tooltip: 'Settings',
@@ -1615,9 +1614,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           Container(
             margin: const EdgeInsets.only(right: 5),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(.40),
+              color: Colors.black.withValues(alpha: 0.40),
               borderRadius: BorderRadius.circular(13),
-              border: Border.all(color: Colors.white.withOpacity(.10)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
             ),
             child: IconButton(
               tooltip: 'Refresh',
@@ -1638,9 +1637,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           Container(
             margin: const EdgeInsets.only(right: 12),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(.40),
+              color: Colors.black.withValues(alpha: 0.40),
               borderRadius: BorderRadius.circular(13),
-              border: Border.all(color: Colors.white.withOpacity(.10)),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
             ),
             child: IconButton(
               tooltip: 'Sign out',
@@ -1679,10 +1678,10 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(.48),
-                    Colors.black.withOpacity(.18),
-                    Colors.black.withOpacity(.38),
-                    Colors.black.withOpacity(.88),
+                    Colors.black.withValues(alpha: 0.48),
+                    Colors.black.withValues(alpha: 0.18),
+                    Colors.black.withValues(alpha: 0.38),
+                    Colors.black.withValues(alpha: 0.88),
                   ],
                   stops: const [0.0, 0.28, 0.62, 1.0],
                 ),
@@ -1844,9 +1843,9 @@ class _HomeDashboardScreenState extends State<HomeDashboardScreen>
           onTap: _addHome,
           child: Container(
             decoration: BoxDecoration(
-              color: primary.withOpacity(.12),
+              color: primary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(19),
-              border: Border.all(color: primary.withOpacity(.35)),
+              border: Border.all(color: primary.withValues(alpha: 0.35)),
             ),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,

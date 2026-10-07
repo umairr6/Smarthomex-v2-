@@ -112,7 +112,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     DropdownButtonFormField<int>(
-                      value: selectedRelayId,
+                      initialValue: selectedRelayId,
                       dropdownColor: SmartHomeColors.surfaceElevated,
                       style: const TextStyle(
                         color: SmartHomeColors.textPrimary,
@@ -197,7 +197,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<bool>(
-                      value: turnOn,
+                      initialValue: turnOn,
                       dropdownColor: SmartHomeColors.surfaceElevated,
                       style: const TextStyle(
                         color: SmartHomeColors.textPrimary,
@@ -368,7 +368,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
       label: Text(label),
       selected: selected,
       showCheckmark: false,
-      selectedColor: SmartHomeColors.gold.withOpacity(.18),
+      selectedColor: SmartHomeColors.gold.withValues(alpha: 0.18),
       backgroundColor: SmartHomeColors.background,
       side: BorderSide(
         color: selected
@@ -644,7 +644,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: SmartHomeColors.gold.withOpacity(.12),
+                      color: SmartHomeColors.gold.withValues(alpha: 0.12),
                       blurRadius: 28,
                     ),
                   ],
@@ -722,7 +722,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
         bottom: SmartHomeResponsive.cardSpacing(context),
       ),
       decoration: BoxDecoration(
-        color: SmartHomeColors.surface.withOpacity(.95),
+        color: SmartHomeColors.surface.withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(22),
         border: Border.all(
           color: schedule.enabled
@@ -731,7 +731,7 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(.28),
+            color: Colors.black.withValues(alpha: 0.28),
             blurRadius: 24,
             offset: const Offset(0, 10),
           ),
@@ -749,10 +749,10 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: SmartHomeColors.gold.withOpacity(.10),
+                    color: SmartHomeColors.gold.withValues(alpha: 0.10),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: SmartHomeColors.gold.withOpacity(.22),
+                      color: SmartHomeColors.gold.withValues(alpha: 0.22),
                     ),
                   ),
                   child: Icon(
@@ -800,9 +800,9 @@ class _SchedulesScreenState extends State<SchedulesScreen> {
                       value,
                     );
                   },
-                  activeColor: SmartHomeColors.gold,
+                  activeThumbColor: SmartHomeColors.gold,
                   activeTrackColor:
-                      SmartHomeColors.gold.withOpacity(.28),
+                      SmartHomeColors.gold.withValues(alpha: 0.28),
                   inactiveThumbColor: SmartHomeColors.textMuted,
                   inactiveTrackColor:
                       SmartHomeColors.background,

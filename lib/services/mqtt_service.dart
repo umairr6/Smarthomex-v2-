@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
@@ -79,12 +79,12 @@ class MqttService {
     _deviceUid = deviceUid.trim();
 
     if (_deviceUid == null || _deviceUid!.isEmpty) {
-      print('MQTT: Device UID is empty.');
+      debugPrint('MQTT: Device UID is empty.');
       return false;
     }
 
     if (isConnected) {
-      print('MQTT: Already connected.');
+      debugPrint('MQTT: Already connected.');
       _subscribeToDevice();
       return true;
     }
@@ -142,11 +142,11 @@ class MqttService {
 
       client.securityContext = securityContext;
 
-      print(
+      debugPrint(
         'MQTT: EMQX CA certificate loaded.',
       );
     } catch (e) {
-      print(
+      debugPrint(
         'MQTT: Failed to load CA certificate: $e',
       );
 
@@ -187,25 +187,25 @@ class MqttService {
     // ===================================================
 
     try {
-      print('');
-      print('========================================');
-      print('SmartHomeX MQTT');
-      print('Connecting to EMQX...');
-      print('Broker: $broker');
-      print('Port: $port');
-      print('Device: $_deviceUid');
-      print('========================================');
+      debugPrint('');
+      debugPrint('========================================');
+      debugPrint('SmartHomeX MQTT');
+      debugPrint('Connecting to EMQX...');
+      debugPrint('Broker: $broker');
+      debugPrint('Port: $port');
+      debugPrint('Device: $_deviceUid');
+      debugPrint('========================================');
 
       final status = await client.connect();
 
       if (status?.state !=
           MqttConnectionState.connected) {
-        print('');
-        print('MQTT CONNECTION FAILED');
-        print(
+        debugPrint('');
+        debugPrint('MQTT CONNECTION FAILED');
+        debugPrint(
           'State: ${status?.state}',
         );
-        print(
+        debugPrint(
           'Return code: ${status?.returnCode}',
         );
 
@@ -216,18 +216,18 @@ class MqttService {
         return false;
       }
 
-      print('');
-      print('========================================');
-      print('MQTT CONNECTED!');
-      print('Client ID: $clientId');
-      print('========================================');
+      debugPrint('');
+      debugPrint('========================================');
+      debugPrint('MQTT CONNECTED!');
+      debugPrint('Client ID: $clientId');
+      debugPrint('========================================');
 
       _subscribeToDevice();
 
       return true;
     } catch (e) {
-      print('');
-      print(
+      debugPrint('');
+      debugPrint(
         'MQTT CONNECTION EXCEPTION: $e',
       );
 
@@ -244,7 +244,7 @@ class MqttService {
   // =====================================================
 
   void _onConnected() {
-    print(
+    debugPrint(
       'SmartHomeX MQTT onConnected callback',
     );
 
@@ -256,7 +256,7 @@ class MqttService {
   // =====================================================
 
   void _onDisconnected() {
-    print(
+    debugPrint(
       'SmartHomeX MQTT disconnected',
     );
   }
@@ -266,13 +266,13 @@ class MqttService {
   // =====================================================
 
   void _onAutoReconnect() {
-    print(
+    debugPrint(
       'SmartHomeX MQTT reconnecting...',
     );
   }
 
   void _onAutoReconnected() {
-    print(
+    debugPrint(
       'SmartHomeX MQTT reconnected!',
     );
 
@@ -290,7 +290,7 @@ class MqttService {
     if (client == null) return;
 
     if (!isConnected) {
-      print(
+      debugPrint(
         'MQTT: Not connected, cannot subscribe.',
       );
       return;
@@ -298,11 +298,11 @@ class MqttService {
 
     if (topic == null) return;
 
-    print('');
-    print(
+    debugPrint('');
+    debugPrint(
       'MQTT subscribing to:',
     );
-    print(topic);
+    debugPrint(topic);
 
     client.subscribe(
       topic,
@@ -313,8 +313,8 @@ class MqttService {
     final availability = availabilityTopic;
 
     if (availability != null) {
-      print('MQTT subscribing to availability:');
-      print(availability);
+      debugPrint('MQTT subscribing to availability:');
+      debugPrint(availability);
 
       client.subscribe(
         availability,
@@ -351,12 +351,12 @@ class MqttService {
         mqttMessage.payload.message,
       );
 
-      print('');
-      print('========================================');
-      print('MQTT MESSAGE RECEIVED');
-      print('Topic: $receivedTopic');
-      print('Payload: $payload');
-      print('========================================');
+      debugPrint('');
+      debugPrint('========================================');
+      debugPrint('MQTT MESSAGE RECEIVED');
+      debugPrint('Topic: $receivedTopic');
+      debugPrint('Payload: $payload');
+      debugPrint('========================================');
 
       // =====================================================
       // ESP32 AVAILABILITY
@@ -399,7 +399,7 @@ class MqttService {
           _stateListener?.call(state);
         }
       } catch (e) {
-        print(
+        debugPrint(
           'MQTT: Invalid state JSON: $e',
         );
       }
@@ -446,21 +446,21 @@ class MqttService {
     final topic = commandTopic;
 
     if (client == null) {
-      print(
+      debugPrint(
         'MQTT: Client is null.',
       );
       return false;
     }
 
     if (topic == null) {
-      print(
+      debugPrint(
         'MQTT: Command topic is null.',
       );
       return false;
     }
 
     if (!isConnected) {
-      print(
+      debugPrint(
         'MQTT: Not connected.',
       );
       return false;
@@ -468,7 +468,7 @@ class MqttService {
 
     if (relayNumber < 1 ||
         relayNumber > 4) {
-      print(
+      debugPrint(
         'MQTT: Invalid relay number: $relayNumber',
       );
       return false;
@@ -488,12 +488,12 @@ class MqttService {
       builder.payload!,
     );
 
-    print('');
-    print('========================================');
-    print('MQTT COMMAND SENT');
-    print('Topic: $topic');
-    print('Command: $command');
-    print('========================================');
+    debugPrint('');
+    debugPrint('========================================');
+    debugPrint('MQTT COMMAND SENT');
+    debugPrint('Topic: $topic');
+    debugPrint('Command: $command');
+    debugPrint('========================================');
 
     return true;
   }

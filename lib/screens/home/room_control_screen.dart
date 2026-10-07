@@ -481,13 +481,13 @@ class _RoomControlScreenState extends State<RoomControlScreen> {
                   end: Alignment.bottomCenter,
 
                   colors: [
-                    Colors.black.withOpacity(0.28),
+                    Colors.black.withValues(alpha: 0.28),
 
-                    Colors.black.withOpacity(0.42),
+                    Colors.black.withValues(alpha: 0.42),
 
-                    Colors.black.withOpacity(0.72),
+                    Colors.black.withValues(alpha: 0.72),
 
-                    Colors.black.withOpacity(0.88),
+                    Colors.black.withValues(alpha: 0.88),
                   ],
 
                   stops: const [0.0, 0.35, 0.70, 1.0],
@@ -536,19 +536,19 @@ class _RoomControlScreenState extends State<RoomControlScreen> {
                           ),
 
                           decoration: BoxDecoration(
-                            color: Colors.black.withOpacity(.34),
+                            color: Colors.black.withValues(alpha: 0.34),
 
                             borderRadius: BorderRadius.circular(22),
 
                             border: Border.all(
-                              color: Colors.white.withOpacity(.10),
+                              color: Colors.white.withValues(alpha: 0.10),
 
                               width: 1,
                             ),
 
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(.22),
+                                color: Colors.black.withValues(alpha: 0.22),
 
                                 blurRadius: 24,
 
@@ -565,7 +565,7 @@ class _RoomControlScreenState extends State<RoomControlScreen> {
                                 height: 56,
 
                                 decoration: BoxDecoration(
-                                  color: SmartHomeColors.gold.withOpacity(.12),
+                                  color: SmartHomeColors.gold.withValues(alpha: 0.12),
 
                                   borderRadius: BorderRadius.circular(17),
                                 ),
@@ -622,8 +622,8 @@ class _RoomControlScreenState extends State<RoomControlScreen> {
 
                                 decoration: BoxDecoration(
                                   color: _online
-                                      ? Colors.green.withOpacity(.12)
-                                      : Colors.red.withOpacity(.12),
+                                      ? Colors.green.withValues(alpha: 0.12)
+                                      : Colors.red.withValues(alpha: 0.12),
 
                                   borderRadius: BorderRadius.circular(20),
                                 ),
@@ -674,12 +674,12 @@ class _RoomControlScreenState extends State<RoomControlScreen> {
                             ),
 
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(.34),
+                              color: Colors.black.withValues(alpha: 0.34),
 
                               borderRadius: BorderRadius.circular(20),
 
                               border: Border.all(
-                                color: Colors.white.withOpacity(.10),
+                                color: Colors.white.withValues(alpha: 0.10),
                               ),
                             ),
 
@@ -733,17 +733,15 @@ class _RoomControlScreenState extends State<RoomControlScreen> {
 
                                   decoration: BoxDecoration(
                                     color: isOn
-                                        ? SmartHomeColors.gold.withOpacity(.12)
-                                        : Colors.black.withOpacity(.34),
+                                        ? SmartHomeColors.gold.withValues(alpha: 0.12)
+                                        : Colors.black.withValues(alpha: 0.34),
 
                                     borderRadius: BorderRadius.circular(22),
 
                                     border: Border.all(
                                       color: isOn
-                                          ? SmartHomeColors.gold.withOpacity(
-                                              .65,
-                                            )
-                                          : Colors.white.withOpacity(.10),
+                                          ? SmartHomeColors.gold.withValues(alpha: 0.65)
+                                          : Colors.white.withValues(alpha: 0.10),
 
                                       width: isOn ? 1.3 : 1.0,
                                     ),
@@ -751,10 +749,8 @@ class _RoomControlScreenState extends State<RoomControlScreen> {
                                     boxShadow: [
                                       BoxShadow(
                                         color: isOn
-                                            ? SmartHomeColors.gold.withOpacity(
-                                                .10,
-                                              )
-                                            : Colors.black.withOpacity(.18),
+                                            ? SmartHomeColors.gold.withValues(alpha: 0.10)
+                                            : Colors.black.withValues(alpha: 0.18),
 
                                         blurRadius: isOn ? 24 : 18,
 
@@ -781,10 +777,8 @@ class _RoomControlScreenState extends State<RoomControlScreen> {
                                             decoration: BoxDecoration(
                                               color: isOn
                                                   ? SmartHomeColors.gold
-                                                        .withOpacity(.18)
-                                                  : Colors.white.withOpacity(
-                                                      .07,
-                                                    ),
+                                                        .withValues(alpha: 0.18)
+                                                  : Colors.white.withValues(alpha: 0.07),
 
                                               borderRadius:
                                                   BorderRadius.circular(15),
@@ -816,7 +810,7 @@ class _RoomControlScreenState extends State<RoomControlScreen> {
                                                 SmartHomeColors.textMuted,
 
                                             inactiveTrackColor: Colors.white
-                                                .withOpacity(.10),
+                                                .withValues(alpha: 0.10),
                                           ),
                                         ],
                                       ),
@@ -944,7 +938,7 @@ class _RoomControlScreenState extends State<RoomControlScreen> {
     required VoidCallback onTap,
   }) {
     return Material(
-      color: Colors.black.withOpacity(.34),
+      color: Colors.black.withValues(alpha: 0.34),
 
       borderRadius: BorderRadius.circular(18),
 
@@ -957,7 +951,7 @@ class _RoomControlScreenState extends State<RoomControlScreen> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
 
-            border: Border.all(color: Colors.white.withOpacity(.10)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.10)),
           ),
 
           child: Padding(
@@ -971,7 +965,7 @@ class _RoomControlScreenState extends State<RoomControlScreen> {
                   height: 46,
 
                   decoration: BoxDecoration(
-                    color: SmartHomeColors.gold.withOpacity(.10),
+                    color: SmartHomeColors.gold.withValues(alpha: 0.10),
 
                     borderRadius: BorderRadius.circular(14),
                   ),

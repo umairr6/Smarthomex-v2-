@@ -261,7 +261,6 @@ class _AppLockScreenState extends State<AppLockScreen> {
   Widget build(BuildContext context) {
     final isSmallPhone = SmartHomeResponsive.isSmallPhone(context);
     final isPhone = SmartHomeResponsive.isPhone(context);
-    final width = SmartHomeResponsive.width(context);
 
     final iconSize = isSmallPhone ? 60.0 : isPhone ? 68.0 : 76.0;
     final keypadButtonSize = isSmallPhone ? 62.0 : isPhone ? 70.0 : 76.0;

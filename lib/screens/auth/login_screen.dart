@@ -227,14 +227,14 @@ class _LoginScreenState extends State<LoginScreen> {
           height: logoSize,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: SmartHomeColors.gold.withOpacity(.08),
+            color: SmartHomeColors.gold.withValues(alpha: 0.08),
             border: Border.all(
-              color: SmartHomeColors.gold.withOpacity(.55),
+              color: SmartHomeColors.gold.withValues(alpha: 0.55),
               width: 1.2,
             ),
             boxShadow: [
               BoxShadow(
-                color: SmartHomeColors.gold.withOpacity(.16),
+                color: SmartHomeColors.gold.withValues(alpha: 0.16),
                 blurRadius: 28,
                 spreadRadius: 2,
               ),
@@ -299,14 +299,14 @@ class _LoginScreenState extends State<LoginScreen> {
         SmartHomeResponsive.isSmallPhone(context) ? 16 : 20,
       ),
       decoration: BoxDecoration(
-        color: SmartHomeColors.surface.withOpacity(.94),
+        color: SmartHomeColors.surface.withValues(alpha: 0.94),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color: SmartHomeColors.border,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(.38),
+            color: Colors.black.withValues(alpha: 0.38),
             blurRadius: 30,
             offset: const Offset(0, 14),
           ),
@@ -415,7 +415,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: SmartHomeColors.gold.withOpacity(.18),
+                    color: SmartHomeColors.gold.withValues(alpha: 0.18),
                     blurRadius: 18,
                     offset: const Offset(0, 7),
                   ),
