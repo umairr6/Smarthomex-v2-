@@ -27,25 +27,17 @@ class HomeService {
     return List<Map<String, dynamic>>.from(response);
   }
 
-  Future<Map<String, dynamic>> createHome(
-    String name,
-  ) async {
+  Future<Map<String, dynamic>> createHome(String name) async {
     final response = await _supabase
         .from('homes')
-        .insert({
-          'user_id': _userId,
-          'name': name.trim(),
-        })
+        .insert({'user_id': _userId, 'name': name.trim()})
         .select()
         .single();
 
     return Map<String, dynamic>.from(response);
   }
 
-  Future<void> renameHome(
-    String homeId,
-    String name,
-  ) async {
+  Future<void> renameHome(String homeId, String name) async {
     await _supabase
         .from('homes')
         .update({
@@ -68,9 +60,7 @@ class HomeService {
   // ROOMS
   // ==========================================
 
-  Future<List<Map<String, dynamic>>> getRooms(
-    String homeId,
-  ) async {
+  Future<List<Map<String, dynamic>>> getRooms(String homeId) async {
     final response = await _supabase
         .from('rooms')
         .select()
@@ -86,10 +76,7 @@ class HomeService {
   }) async {
     final response = await _supabase
         .from('rooms')
-        .insert({
-          'home_id': homeId,
-          'name': name.trim(),
-        })
+        .insert({'home_id': homeId, 'name': name.trim()})
         .select()
         .single();
 
@@ -110,9 +97,6 @@ class HomeService {
   }
 
   Future<void> deleteRoom(String roomId) async {
-    await _supabase
-        .from('rooms')
-        .delete()
-        .eq('id', roomId);
+    await _supabase.from('rooms').delete().eq('id', roomId);
   }
 }

@@ -8,8 +8,7 @@ import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 
 class MqttService {
-  static const String broker =
-      'b8022b1a.ala.asia-southeast1.emqxsl.com';
+  static const String broker = 'b8022b1a.ala.asia-southeast1.emqxsl.com';
 
   static const int port = 8883;
 
@@ -31,14 +30,12 @@ class MqttService {
 
   // If the ESP32 stops sending state/availability messages,
   // consider it offline after this period.
-  static const Duration _deviceOfflineTimeout =
-      Duration(seconds: 45);
+  static const Duration _deviceOfflineTimeout = Duration(seconds: 45);
 
   void Function(Map<String, dynamic> state)? _stateListener;
 
   bool get isConnected {
-    return _client?.connectionStatus?.state ==
-        MqttConnectionState.connected;
+    return _client?.connectionStatus?.state == MqttConnectionState.connected;
   }
 
   String? get deviceUid => _deviceUid;
@@ -65,9 +62,7 @@ class MqttService {
   // STATE LISTENER
   // =====================================================
 
-  void setStateListener(
-    void Function(Map<String, dynamic> state)? listener,
-  ) {
+  void setStateListener(void Function(Map<String, dynamic> state)? listener) {
     _stateListener = listener;
   }
 
@@ -95,14 +90,9 @@ class MqttService {
       } catch (_) {}
     }
 
-    final clientId =
-        'smarthomex_app_${DateTime.now().millisecondsSinceEpoch}';
+    final clientId = 'smarthomex_app_${DateTime.now().millisecondsSinceEpoch}';
 
-    final client = MqttServerClient.withPort(
-      broker,
-      clientId,
-      port,
-    );
+    final client = MqttServerClient.withPort(broker, clientId, port);
 
     _client = client;
 
@@ -127,14 +117,12 @@ class MqttService {
         'assets/certificates/emqxsl-ca.crt',
       );
 
-      final certificateBytes =
-          certificateData.buffer.asUint8List(
+      final certificateBytes = certificateData.buffer.asUint8List(
         certificateData.offsetInBytes,
         certificateData.lengthInBytes,
       );
 
-      final securityContext =
-          SecurityContext(withTrustedRoots: true);
+      final securityContext = SecurityContext(withTrustedRoots: true);
 
       securityContext.setTrustedCertificatesBytes(
         Uint8List.fromList(certificateBytes),
@@ -142,13 +130,9 @@ class MqttService {
 
       client.securityContext = securityContext;
 
-      debugPrint(
-        'MQTT: EMQX CA certificate loaded.',
-      );
+      debugPrint('MQTT: EMQX CA certificate loaded.');
     } catch (e) {
-      debugPrint(
-        'MQTT: Failed to load CA certificate: $e',
-      );
+      debugPrint('MQTT: Failed to load CA certificate: $e');
 
       return false;
     }
@@ -159,14 +143,9 @@ class MqttService {
 
     final connectMessage = MqttConnectMessage()
         .withClientIdentifier(clientId)
-        .authenticateAs(
-          username,
-          password,
-        )
+        .authenticateAs(username, password)
         .startClean()
-        .withWillQos(
-          MqttQos.atMostOnce,
-        );
+        .withWillQos(MqttQos.atMostOnce);
 
     client.connectionMessage = connectMessage;
 
@@ -198,16 +177,11 @@ class MqttService {
 
       final status = await client.connect();
 
-      if (status?.state !=
-          MqttConnectionState.connected) {
+      if (status?.state != MqttConnectionState.connected) {
         debugPrint('');
         debugPrint('MQTT CONNECTION FAILED');
-        debugPrint(
-          'State: ${status?.state}',
-        );
-        debugPrint(
-          'Return code: ${status?.returnCode}',
-        );
+        debugPrint('State: ${status?.state}');
+        debugPrint('Return code: ${status?.returnCode}');
 
         try {
           client.disconnect();
@@ -227,9 +201,7 @@ class MqttService {
       return true;
     } catch (e) {
       debugPrint('');
-      debugPrint(
-        'MQTT CONNECTION EXCEPTION: $e',
-      );
+      debugPrint('MQTT CONNECTION EXCEPTION: $e');
 
       try {
         client.disconnect();
@@ -244,9 +216,7 @@ class MqttService {
   // =====================================================
 
   void _onConnected() {
-    debugPrint(
-      'SmartHomeX MQTT onConnected callback',
-    );
+    debugPrint('SmartHomeX MQTT onConnected callback');
 
     _subscribeToDevice();
   }
@@ -256,9 +226,7 @@ class MqttService {
   // =====================================================
 
   void _onDisconnected() {
-    debugPrint(
-      'SmartHomeX MQTT disconnected',
-    );
+    debugPrint('SmartHomeX MQTT disconnected');
   }
 
   // =====================================================
@@ -266,15 +234,11 @@ class MqttService {
   // =====================================================
 
   void _onAutoReconnect() {
-    debugPrint(
-      'SmartHomeX MQTT reconnecting...',
-    );
+    debugPrint('SmartHomeX MQTT reconnecting...');
   }
 
   void _onAutoReconnected() {
-    debugPrint(
-      'SmartHomeX MQTT reconnected!',
-    );
+    debugPrint('SmartHomeX MQTT reconnected!');
 
     _subscribeToDevice();
   }
@@ -290,24 +254,17 @@ class MqttService {
     if (client == null) return;
 
     if (!isConnected) {
-      debugPrint(
-        'MQTT: Not connected, cannot subscribe.',
-      );
+      debugPrint('MQTT: Not connected, cannot subscribe.');
       return;
     }
 
     if (topic == null) return;
 
     debugPrint('');
-    debugPrint(
-      'MQTT subscribing to:',
-    );
+    debugPrint('MQTT subscribing to:');
     debugPrint(topic);
 
-    client.subscribe(
-      topic,
-      MqttQos.atMostOnce,
-    );
+    client.subscribe(topic, MqttQos.atMostOnce);
 
     // Subscribe to the ESP32 availability/LWT topic too.
     final availability = availabilityTopic;
@@ -316,19 +273,14 @@ class MqttService {
       debugPrint('MQTT subscribing to availability:');
       debugPrint(availability);
 
-      client.subscribe(
-        availability,
-        MqttQos.atMostOnce,
-      );
+      client.subscribe(availability, MqttQos.atMostOnce);
     }
 
     // Only attach one listener to the MQTT update stream.
     if (!_listening) {
       _listening = true;
 
-      client.updates?.listen(
-        _handleMessages,
-      );
+      client.updates?.listen(_handleMessages);
     }
   }
 
@@ -336,18 +288,13 @@ class MqttService {
   // RECEIVE STATE
   // =====================================================
 
-  void _handleMessages(
-    List<MqttReceivedMessage<MqttMessage>> messages,
-  ) {
+  void _handleMessages(List<MqttReceivedMessage<MqttMessage>> messages) {
     for (final message in messages) {
-      final receivedTopic =
-          message.topic;
+      final receivedTopic = message.topic;
 
-      final mqttMessage =
-          message.payload as MqttPublishMessage;
+      final mqttMessage = message.payload as MqttPublishMessage;
 
-      final payload =
-          MqttPublishPayload.bytesToStringAsString(
+      final payload = MqttPublishPayload.bytesToStringAsString(
         mqttMessage.payload.message,
       );
 
@@ -390,8 +337,7 @@ class MqttService {
         final decoded = jsonDecode(payload);
 
         if (decoded is Map) {
-          final state =
-              Map<String, dynamic>.from(decoded);
+          final state = Map<String, dynamic>.from(decoded);
 
           // A valid state message proves the ESP32 is alive.
           _markDeviceAlive();
@@ -399,9 +345,7 @@ class MqttService {
           _stateListener?.call(state);
         }
       } catch (e) {
-        debugPrint(
-          'MQTT: Invalid state JSON: $e',
-        );
+        debugPrint('MQTT: Invalid state JSON: $e');
       }
     }
   }
@@ -414,15 +358,9 @@ class MqttService {
     _deviceOfflineTimer?.cancel();
 
     // Send a status event to the RoomControlScreen.
-    _stateListener?.call({
-      'device_uid': _deviceUid,
-      '_availability': 'online',
-    });
+    _stateListener?.call({'device_uid': _deviceUid, '_availability': 'online'});
 
-    _deviceOfflineTimer = Timer(
-      _deviceOfflineTimeout,
-      _markDeviceOffline,
-    );
+    _deviceOfflineTimer = Timer(_deviceOfflineTimeout, _markDeviceOffline);
   }
 
   void _markDeviceOffline() {
@@ -438,55 +376,37 @@ class MqttService {
   // RELAY COMMAND
   // =====================================================
 
-  bool setRelay(
-    int relayNumber,
-    bool turnOn,
-  ) {
+  bool setRelay(int relayNumber, bool turnOn) {
     final client = _client;
     final topic = commandTopic;
 
     if (client == null) {
-      debugPrint(
-        'MQTT: Client is null.',
-      );
+      debugPrint('MQTT: Client is null.');
       return false;
     }
 
     if (topic == null) {
-      debugPrint(
-        'MQTT: Command topic is null.',
-      );
+      debugPrint('MQTT: Command topic is null.');
       return false;
     }
 
     if (!isConnected) {
-      debugPrint(
-        'MQTT: Not connected.',
-      );
+      debugPrint('MQTT: Not connected.');
       return false;
     }
 
-    if (relayNumber < 1 ||
-        relayNumber > 4) {
-      debugPrint(
-        'MQTT: Invalid relay number: $relayNumber',
-      );
+    if (relayNumber < 1 || relayNumber > 4) {
+      debugPrint('MQTT: Invalid relay number: $relayNumber');
       return false;
     }
 
-    final command =
-        'relay$relayNumber:${turnOn ? 'on' : 'off'}';
+    final command = 'relay$relayNumber:${turnOn ? 'on' : 'off'}';
 
-    final builder =
-        MqttClientPayloadBuilder();
+    final builder = MqttClientPayloadBuilder();
 
     builder.addString(command);
 
-    client.publishMessage(
-      topic,
-      MqttQos.atMostOnce,
-      builder.payload!,
-    );
+    client.publishMessage(topic, MqttQos.atMostOnce, builder.payload!);
 
     debugPrint('');
     debugPrint('========================================');

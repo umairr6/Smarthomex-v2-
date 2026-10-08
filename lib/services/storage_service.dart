@@ -20,10 +20,7 @@ class StorageService {
   Future<void> saveDevice(Device device) async {
     final prefs = await SharedPreferences.getInstance();
 
-    await prefs.setString(
-      _deviceKey,
-      jsonEncode(device.toJson()),
-    );
+    await prefs.setString(_deviceKey, jsonEncode(device.toJson()));
   }
 
   Future<Device?> loadDevice() async {
@@ -58,19 +55,12 @@ class StorageService {
   // RELAYS
   // =========================
 
-  Future<void> saveRelays(
-    List<Relay> relays,
-  ) async {
+  Future<void> saveRelays(List<Relay> relays) async {
     final prefs = await SharedPreferences.getInstance();
 
-    final relayData = relays
-        .map((relay) => relay.toJson())
-        .toList();
+    final relayData = relays.map((relay) => relay.toJson()).toList();
 
-    await prefs.setString(
-      _relaysKey,
-      jsonEncode(relayData),
-    );
+    await prefs.setString(_relaysKey, jsonEncode(relayData));
   }
 
   Future<List<Relay>?> loadRelays() async {
@@ -91,9 +81,7 @@ class StorageService {
 
       return decoded
           .whereType<Map<String, dynamic>>()
-          .map(
-            (json) => Relay.fromJson(json),
-          )
+          .map((json) => Relay.fromJson(json))
           .toList();
     } catch (_) {
       return null;
@@ -110,19 +98,12 @@ class StorageService {
   // TIMERS
   // =========================
 
-  Future<void> saveTimers(
-    List<RelayTimer> timers,
-  ) async {
+  Future<void> saveTimers(List<RelayTimer> timers) async {
     final prefs = await SharedPreferences.getInstance();
 
-    final timerData = timers
-        .map((timer) => timer.toJson())
-        .toList();
+    final timerData = timers.map((timer) => timer.toJson()).toList();
 
-    await prefs.setString(
-      _timersKey,
-      jsonEncode(timerData),
-    );
+    await prefs.setString(_timersKey, jsonEncode(timerData));
   }
 
   Future<List<RelayTimer>> loadTimers() async {
@@ -143,9 +124,7 @@ class StorageService {
 
       return decoded
           .whereType<Map<String, dynamic>>()
-          .map(
-            (json) => RelayTimer.fromJson(json),
-          )
+          .map((json) => RelayTimer.fromJson(json))
           .toList();
     } catch (_) {
       return [];
@@ -162,19 +141,14 @@ class StorageService {
   // SCHEDULES
   // =========================
 
-  Future<void> saveSchedules(
-    List<RelaySchedule> schedules,
-  ) async {
+  Future<void> saveSchedules(List<RelaySchedule> schedules) async {
     final prefs = await SharedPreferences.getInstance();
 
     final scheduleData = schedules
         .map((schedule) => schedule.toJson())
         .toList();
 
-    await prefs.setString(
-      _schedulesKey,
-      jsonEncode(scheduleData),
-    );
+    await prefs.setString(_schedulesKey, jsonEncode(scheduleData));
   }
 
   Future<List<RelaySchedule>> loadSchedules() async {
@@ -195,9 +169,7 @@ class StorageService {
 
       return decoded
           .whereType<Map<String, dynamic>>()
-          .map(
-            (json) => RelaySchedule.fromJson(json),
-          )
+          .map((json) => RelaySchedule.fromJson(json))
           .toList();
     } catch (_) {
       return [];

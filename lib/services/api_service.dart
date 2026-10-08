@@ -14,9 +14,7 @@ class ApiService {
   Future<bool> checkConnection(String ipAddress) async {
     try {
       final response = await http
-          .get(
-            Uri.parse('${_baseUrl(ipAddress)}/status'),
-          )
+          .get(Uri.parse('${_baseUrl(ipAddress)}/status'))
           .timeout(timeout);
 
       return response.statusCode == 200;
@@ -29,9 +27,7 @@ class ApiService {
   Future<Map<String, dynamic>?> getStatus(String ipAddress) async {
     try {
       final response = await http
-          .get(
-            Uri.parse('${_baseUrl(ipAddress)}/status'),
-          )
+          .get(Uri.parse('${_baseUrl(ipAddress)}/status'))
           .timeout(timeout);
 
       if (response.statusCode != 200) {
@@ -51,27 +47,13 @@ class ApiService {
   }
 
   /// Turn a relay ON.
-  Future<bool> turnRelayOn(
-    String ipAddress,
-    int relayId,
-  ) async {
-    return _setRelay(
-      ipAddress: ipAddress,
-      relayId: relayId,
-      state: 'on',
-    );
+  Future<bool> turnRelayOn(String ipAddress, int relayId) async {
+    return _setRelay(ipAddress: ipAddress, relayId: relayId, state: 'on');
   }
 
   /// Turn a relay OFF.
-  Future<bool> turnRelayOff(
-    String ipAddress,
-    int relayId,
-  ) async {
-    return _setRelay(
-      ipAddress: ipAddress,
-      relayId: relayId,
-      state: 'off',
-    );
+  Future<bool> turnRelayOff(String ipAddress, int relayId) async {
+    return _setRelay(ipAddress: ipAddress, relayId: relayId, state: 'off');
   }
 
   /// Send relay command to ESP32.
@@ -82,11 +64,7 @@ class ApiService {
   }) async {
     try {
       final response = await http
-          .get(
-            Uri.parse(
-              '${_baseUrl(ipAddress)}/relay$relayId/$state',
-            ),
-          )
+          .get(Uri.parse('${_baseUrl(ipAddress)}/relay$relayId/$state'))
           .timeout(timeout);
 
       return response.statusCode == 200;

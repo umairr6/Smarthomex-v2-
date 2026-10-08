@@ -11,8 +11,8 @@ import 'storage_service.dart';
 
 /// Production Android schedule engine for SmartHomeX.
 ///
-/// The UI only creates/updates/deletes schedules. Android AlarmManager owns
-/// the actual execution, so leaving the Schedules screen does not stop it.
+/// Android AlarmManager owns the actual execution, so schedules continue
+/// working when the Schedules screen is closed or the app is in background.
 class ScheduleManager {
   ScheduleManager._();
 
@@ -21,26 +21,33 @@ class ScheduleManager {
   static const int _maxAlarmId = 0x7fffffff;
   static const String _lastExecutionPrefix = 'schedule_last_execution_';
 
+  /// Retry a failed device command after this amount of time.
+  static const Duration _retryDelay = Duration(minutes: 1);
+
   final StorageService _storage = StorageService();
 
   bool _initialized = false;
   bool _exactAlarmAvailable = false;
 
   bool get isInitialized => _initialized;
+
   bool get exactAlarmAvailable => _exactAlarmAvailable;
 
   Future<void> initialize() async {
     if (_initialized) {
       final wasAvailable = _exactAlarmAvailable;
+
       _exactAlarmAvailable = await _checkExactAlarmPermission();
 
       if (!wasAvailable && _exactAlarmAvailable) {
         await rescheduleAll();
       }
+
       return;
     }
 
     await AndroidAlarmManager.initialize();
+
     _initialized = true;
 
     _exactAlarmAvailable = await _checkExactAlarmPermission();
@@ -53,17 +60,15 @@ class ScheduleManager {
   Future<bool> _checkExactAlarmPermission() async {
     try {
       final status = await Permission.scheduleExactAlarm.status;
+
       return status.isGranted;
     } catch (_) {
-      // Older Android versions do not require this special permission.
+      // Older Android versions do not require this permission.
       return true;
     }
   }
 
-  /// Requests Android's exact-alarm permission when required.
-  ///
-  /// We deliberately do this from the schedule creation flow instead of
-  /// interrupting the user at app startup.
+  /// Requests Android exact-alarm permission when required.
   Future<bool> requestExactAlarmPermission() async {
     try {
       var status = await Permission.scheduleExactAlarm.status;
@@ -74,7 +79,9 @@ class ScheduleManager {
       }
 
       status = await Permission.scheduleExactAlarm.request();
+
       _exactAlarmAvailable = status.isGranted;
+
       return _exactAlarmAvailable;
     } catch (_) {
       _exactAlarmAvailable = true;
@@ -82,6 +89,7 @@ class ScheduleManager {
     }
   }
 
+  /// Creates or replaces the Android alarm for one schedule.
   Future<bool> scheduleOne(RelaySchedule schedule) async {
     await initialize();
 
@@ -92,29 +100,40 @@ class ScheduleManager {
 
     if (!_exactAlarmAvailable) {
       final granted = await requestExactAlarmPermission();
-      if (!granted) return false;
+
+      if (!granted) {
+        return false;
+      }
     }
 
     await cancel(schedule);
 
     final next = _nextOccurrence(schedule, DateTime.now());
-    final alarmId = _alarmId(schedule.id);
 
     return AndroidAlarmManager.oneShotAt(
       next,
-      alarmId,
+      _alarmId(schedule.id),
       scheduleAlarmCallback,
       exact: true,
       wakeup: true,
       allowWhileIdle: true,
       rescheduleOnReboot: true,
+      params: <String, dynamic>{'schedule_id': schedule.id},
     );
   }
 
+  /// Restores all saved schedules into Android AlarmManager.
   Future<void> rescheduleAll() async {
     if (!_initialized) {
       await AndroidAlarmManager.initialize();
+
       _initialized = true;
+    }
+
+    _exactAlarmAvailable = await _checkExactAlarmPermission();
+
+    if (!_exactAlarmAvailable) {
+      return;
     }
 
     final schedules = await _storage.loadSchedules();
@@ -125,11 +144,10 @@ class ScheduleManager {
         continue;
       }
 
-      if (!_exactAlarmAvailable) continue;
-
       await cancel(schedule);
 
       final next = _nextOccurrence(schedule, DateTime.now());
+
       await AndroidAlarmManager.oneShotAt(
         next,
         _alarmId(schedule.id),
@@ -138,21 +156,24 @@ class ScheduleManager {
         wakeup: true,
         allowWhileIdle: true,
         rescheduleOnReboot: true,
-        params: <String, dynamic>{
-          'schedule_id': schedule.id,
-        },
+        params: <String, dynamic>{'schedule_id': schedule.id},
       );
     }
   }
 
   Future<void> cancel(RelaySchedule schedule) async {
-    if (!_initialized) return;
+    if (!_initialized) {
+      return;
+    }
+
     await AndroidAlarmManager.cancel(_alarmId(schedule.id));
   }
 
   Future<void> delete(RelaySchedule schedule) async {
     await cancel(schedule);
+
     final prefs = await SharedPreferences.getInstance();
+
     await prefs.remove('$_lastExecutionPrefix${schedule.id}');
   }
 
@@ -165,9 +186,12 @@ class ScheduleManager {
   }
 
   int _alarmId(String scheduleId) {
-    // Stable FNV-1a style hash. Dart's String.hashCode is not used because
-    // alarm IDs must remain stable across app/process restarts.
+    return _stableAlarmId(scheduleId);
+  }
+
+  static int _stableAlarmId(String scheduleId) {
     var hash = 2166136261;
+
     for (final codeUnit in utf8.encode(scheduleId)) {
       hash ^= codeUnit;
       hash = (hash * 16777619) & 0xffffffff;
@@ -176,10 +200,7 @@ class ScheduleManager {
     return hash & _maxAlarmId;
   }
 
-  DateTime _nextOccurrence(
-    RelaySchedule schedule,
-    DateTime from,
-  ) {
+  DateTime _nextOccurrence(RelaySchedule schedule, DateTime from) {
     for (var offset = 0; offset <= 7; offset++) {
       final candidateDate = DateTime(
         from.year,
@@ -198,7 +219,6 @@ class ScheduleManager {
       }
     }
 
-    // A valid weekly schedule always has a matching day in the next 7 days.
     return DateTime(
       from.year,
       from.month,
@@ -208,10 +228,7 @@ class ScheduleManager {
     );
   }
 
-  static DateTime _nextOccurrenceStatic(
-    RelaySchedule schedule,
-    DateTime from,
-  ) {
+  static DateTime _nextOccurrenceStatic(RelaySchedule schedule, DateTime from) {
     for (var offset = 0; offset <= 7; offset++) {
       final candidateDate = DateTime(
         from.year,
@@ -221,8 +238,13 @@ class ScheduleManager {
         schedule.minute,
       );
 
-      if (!schedule.weekdays.contains(candidateDate.weekday)) continue;
-      if (candidateDate.isAfter(from)) return candidateDate;
+      if (!schedule.weekdays.contains(candidateDate.weekday)) {
+        continue;
+      }
+
+      if (candidateDate.isAfter(from)) {
+        return candidateDate;
+      }
     }
 
     return DateTime(
@@ -232,15 +254,6 @@ class ScheduleManager {
       schedule.hour,
       schedule.minute,
     );
-  }
-
-  static int _stableAlarmId(String scheduleId) {
-    var hash = 2166136261;
-    for (final codeUnit in utf8.encode(scheduleId)) {
-      hash ^= codeUnit;
-      hash = (hash * 16777619) & 0xffffffff;
-    }
-    return hash & _maxAlarmId;
   }
 
   static Future<void> _scheduleNextFromBackground(
@@ -256,6 +269,27 @@ class ScheduleManager {
       wakeup: true,
       allowWhileIdle: true,
       rescheduleOnReboot: true,
+      params: <String, dynamic>{'schedule_id': schedule.id},
+    );
+  }
+
+  /// Schedules a retry for a failed ESP32 command.
+  ///
+  /// The retry uses the same alarm ID, so it replaces the currently
+  /// executing one-shot alarm. The weekly schedule will be armed again
+  /// after the command succeeds.
+  static Future<void> _scheduleRetry(RelaySchedule schedule) async {
+    final retryAt = DateTime.now().add(_retryDelay);
+
+    await AndroidAlarmManager.oneShotAt(
+      retryAt,
+      _stableAlarmId(schedule.id),
+      scheduleAlarmCallback,
+      exact: true,
+      wakeup: true,
+      allowWhileIdle: true,
+      rescheduleOnReboot: true,
+      params: <String, dynamic>{'schedule_id': schedule.id},
     );
   }
 
@@ -264,8 +298,9 @@ class ScheduleManager {
     DateTime now,
   ) async {
     final prefs = await SharedPreferences.getInstance();
-    final key =
-        '${now.year}-${now.month}-${now.day}-${now.hour}-${now.minute}';
+
+    final key = '${now.year}-${now.month}-${now.day}-${now.hour}-${now.minute}';
+
     return prefs.getString('$_lastExecutionPrefix${schedule.id}') == key;
   }
 
@@ -274,8 +309,9 @@ class ScheduleManager {
     DateTime now,
   ) async {
     final prefs = await SharedPreferences.getInstance();
-    final key =
-        '${now.year}-${now.month}-${now.day}-${now.hour}-${now.minute}';
+
+    final key = '${now.year}-${now.month}-${now.day}-${now.hour}-${now.minute}';
+
     await prefs.setString('$_lastExecutionPrefix${schedule.id}', key);
   }
 
@@ -286,6 +322,7 @@ class ScheduleManager {
 
     final storage = StorageService();
     final api = ApiService();
+
     final schedules = await storage.loadSchedules();
 
     RelaySchedule? schedule;
@@ -297,15 +334,30 @@ class ScheduleManager {
       }
     }
 
-    if (schedule == null || !schedule.enabled) return;
+    if (schedule == null) {
+      return;
+    }
+
+    if (!schedule.enabled || schedule.weekdays.isEmpty) {
+      return;
+    }
 
     final now = DateTime.now();
 
+    /*
+     * If this is a retry alarm, the current day is still valid.
+     *
+     * If the alarm fires on a day that is not part of the schedule,
+     * simply arm the next normal occurrence.
+     */
     if (!schedule.weekdays.contains(now.weekday)) {
       await _scheduleNextFromBackground(schedule);
       return;
     }
 
+    /*
+     * Prevent duplicate execution during the same scheduled minute.
+     */
     if (await _alreadyExecuted(schedule, now)) {
       await _scheduleNextFromBackground(schedule);
       return;
@@ -313,38 +365,57 @@ class ScheduleManager {
 
     final device = await storage.loadDevice();
 
-    if (device != null) {
-      bool success = false;
+    /*
+     * No device information is available.
+     *
+     * Keep trying instead of silently losing the schedule.
+     */
+    if (device == null) {
+      await _scheduleRetry(schedule);
+      return;
+    }
 
-      // A local ESP32 can briefly be unavailable while Wi-Fi is waking.
-      // Give the command a couple of quick attempts before marking this run
-      // unsuccessful. The weekly schedule itself is still re-armed below.
-      for (var attempt = 0; attempt < 2; attempt++) {
-        success = schedule.turnOn
-            ? await api.turnRelayOn(
-                device.ipAddress,
-                schedule.relayId,
-              )
-            : await api.turnRelayOff(
-                device.ipAddress,
-                schedule.relayId,
-              );
+    bool success = false;
 
-        if (success) break;
-        if (attempt == 0) {
-          await Future<void>.delayed(
-            const Duration(seconds: 3),
-          );
-        }
-      }
+    /*
+     * First attempt.
+     */
+    for (var attempt = 0; attempt < 2; attempt++) {
+      success = schedule.turnOn
+          ? await api.turnRelayOn(device.ipAddress, schedule.relayId)
+          : await api.turnRelayOff(device.ipAddress, schedule.relayId);
 
       if (success) {
-        await _markExecuted(schedule, now);
+        break;
+      }
+
+      /*
+       * Give the ESP32/Wi-Fi a few seconds before the second attempt.
+       */
+      if (attempt == 0) {
+        await Future<void>.delayed(const Duration(seconds: 3));
       }
     }
 
-    // Always arm the next weekly occurrence, even if this week's device
-    // command failed. A temporary network failure must not kill the schedule.
+    /*
+     * Device command failed.
+     *
+     * DO NOT mark the schedule as executed.
+     * Retry in one minute.
+     */
+    if (!success) {
+      await _scheduleRetry(schedule);
+      return;
+    }
+
+    /*
+     * The device command succeeded.
+     */
+    await _markExecuted(schedule, now);
+
+    /*
+     * Re-arm the next weekly occurrence.
+     */
     await _scheduleNextFromBackground(schedule);
   }
 }

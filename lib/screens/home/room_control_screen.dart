@@ -163,7 +163,7 @@ class _RoomControlScreenState extends State<RoomControlScreen> {
       _online = false;
     });
 
-    final connected = await _mqttService.connect(_getDeviceUid());
+    final connected = await _mqttService.connect(widget.deviceId);
 
     if (!mounted) return;
 
@@ -173,26 +173,6 @@ class _RoomControlScreenState extends State<RoomControlScreen> {
   }
 
   // =====================================================
-
-  // DEVICE UID
-
-  // =====================================================
-
-  String _getDeviceUid() {
-    // Your current paired device UID is SHX-90F57630.
-
-    //
-
-    // Later this will come directly from the
-
-    // Supabase devices.device_uid column.
-
-    //
-
-    // For the current device, use:
-
-    return 'SHX-90F57630';
-  }
 
   // =====================================================
 
@@ -205,7 +185,7 @@ class _RoomControlScreenState extends State<RoomControlScreen> {
 
     final receivedUid = state['device_uid'] as String?;
 
-    if (receivedUid != null && receivedUid != _getDeviceUid()) {
+    if (receivedUid != null && receivedUid != widget.deviceId) {
       return;
     }
 
@@ -565,7 +545,9 @@ class _RoomControlScreenState extends State<RoomControlScreen> {
                                 height: 56,
 
                                 decoration: BoxDecoration(
-                                  color: SmartHomeColors.gold.withValues(alpha: 0.12),
+                                  color: SmartHomeColors.gold.withValues(
+                                    alpha: 0.12,
+                                  ),
 
                                   borderRadius: BorderRadius.circular(17),
                                 ),
@@ -733,15 +715,21 @@ class _RoomControlScreenState extends State<RoomControlScreen> {
 
                                   decoration: BoxDecoration(
                                     color: isOn
-                                        ? SmartHomeColors.gold.withValues(alpha: 0.12)
+                                        ? SmartHomeColors.gold.withValues(
+                                            alpha: 0.12,
+                                          )
                                         : Colors.black.withValues(alpha: 0.34),
 
                                     borderRadius: BorderRadius.circular(22),
 
                                     border: Border.all(
                                       color: isOn
-                                          ? SmartHomeColors.gold.withValues(alpha: 0.65)
-                                          : Colors.white.withValues(alpha: 0.10),
+                                          ? SmartHomeColors.gold.withValues(
+                                              alpha: 0.65,
+                                            )
+                                          : Colors.white.withValues(
+                                              alpha: 0.10,
+                                            ),
 
                                       width: isOn ? 1.3 : 1.0,
                                     ),
@@ -749,8 +737,12 @@ class _RoomControlScreenState extends State<RoomControlScreen> {
                                     boxShadow: [
                                       BoxShadow(
                                         color: isOn
-                                            ? SmartHomeColors.gold.withValues(alpha: 0.10)
-                                            : Colors.black.withValues(alpha: 0.18),
+                                            ? SmartHomeColors.gold.withValues(
+                                                alpha: 0.10,
+                                              )
+                                            : Colors.black.withValues(
+                                                alpha: 0.18,
+                                              ),
 
                                         blurRadius: isOn ? 24 : 18,
 
@@ -778,7 +770,9 @@ class _RoomControlScreenState extends State<RoomControlScreen> {
                                               color: isOn
                                                   ? SmartHomeColors.gold
                                                         .withValues(alpha: 0.18)
-                                                  : Colors.white.withValues(alpha: 0.07),
+                                                  : Colors.white.withValues(
+                                                      alpha: 0.07,
+                                                    ),
 
                                               borderRadius:
                                                   BorderRadius.circular(15),

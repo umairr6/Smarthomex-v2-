@@ -7,8 +7,7 @@ class AuthService {
 
   Session? get currentSession => _supabase.auth.currentSession;
 
-  Stream<AuthState> get authStateChanges =>
-      _supabase.auth.onAuthStateChange;
+  Stream<AuthState> get authStateChanges => _supabase.auth.onAuthStateChange;
 
   Future<AuthResponse> signUp({
     required String email,
@@ -19,9 +18,7 @@ class AuthService {
       email: email.trim(),
       password: password,
       emailRedirectTo: 'smarthomex://auth-callback/',
-      data: {
-        'full_name': fullName.trim(),
-      },
+      data: {'full_name': fullName.trim()},
     );
 
     if (response.user != null && response.session != null) {
@@ -45,10 +42,7 @@ class AuthService {
     );
 
     if (response.user != null) {
-      await ensureUserData(
-        user: response.user!,
-        email: email,
-      );
+      await ensureUserData(user: response.user!, email: email);
     }
 
     return response;
@@ -91,10 +85,9 @@ class AuthService {
     if (existingProfile == null) {
       await _supabase.from('profiles').insert({
         'id': user.id,
-        'full_name':
-            fullName?.trim().isNotEmpty == true
-                ? fullName!.trim()
-                : user.userMetadata?['full_name'],
+        'full_name': fullName?.trim().isNotEmpty == true
+            ? fullName!.trim()
+            : user.userMetadata?['full_name'],
         'email': email?.trim() ?? user.email,
       });
     }
