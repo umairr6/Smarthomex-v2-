@@ -29,7 +29,8 @@ smarthomex/
 
 ![SmartHomeX photo 1](assets/images/IMG_20261009_232107.jpg)
 ![SmartHomeX photo 2](assets/images/IMG_20261009_232118.jpg)
-![SmartHomeX photo 3](assets/images/IMG_20261009_232125.jpg)
-![SmartHomeX photo 4](assets/images/IMG_20261009_232133.jpg)
-![SmartHomeX photo 5](assets/images/IMG_20261009_232139.jpg)
-![SmartHomeX photo 6](assets/images/IMG_20261009_232147.jpg)
+![SmartHomeX photo 3](assets/images/IMG_20261009_232147.jpg)
+![SmartHomeX photo 4](assets/images/IMG_20261009_232125.jpg)
+![SmartHomeX photo 5](assets/images/IMG_20261009_232133.jpg)
+![SmartHomeX photo 6](assets/images/IMG_20261009_232139.jpg)
+
