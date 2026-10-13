@@ -12,9 +12,9 @@ class MqttService {
 
   static const int port = 8883;
 
-  static const String username = 'smarthomex_esp32';
+  static const String username = 'kukustyle';
 
-  static const String password = 'umlain@1420';
+  static const String password = 'kukustyle';
 
   MqttServerClient? _client;
 
